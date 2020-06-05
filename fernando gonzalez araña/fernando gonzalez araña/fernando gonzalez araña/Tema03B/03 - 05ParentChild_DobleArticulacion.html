@@ -1,0 +1,458 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <title>Personaje - Ejemplo</title>
+        <style>
+            html, body { margin: 0; padding: 0; overflow: hidden; }
+            #info {
+                position: absolute;
+                padding: 10px;
+                width: 100%;
+                text-align: center;
+                color: #FFFFFF;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="info">RELACIÓN PARENT-CHILD<br/>
+            Usar flecha arriba y abajo para trasladar.<br/>
+            Usar flechas laterales para rotar.<br/>
+        </div>
+    <script src="js/three.min.js"></script>
+    <script>
+		var scene, aspect, camera, renderer;
+		var geometry1, geometry2;
+		var hips, torso, head;
+		var rightFoot, rightLeg, rightArm, rightHand;
+		var leftFoot, leftLeg, leftArm, leftHand;
+		var pata1d, pata2d, pata3d, pata4d, pata1i, pata2i, pata3i, pata4i;
+		var mus2d, mus3d, mus4d, mus1i, mus2i, mus3i, mus4i;
+		
+		var startTime = Date.now();
+		
+		var axesHelper1 = new THREE.AxesHelper( 1 );
+				
+		var upArrow = false;
+		var downArrow = false;
+		var leftArrow = false;
+		var rightArrow = false;
+		var scaleUp = false;
+		var scaleDown = false;
+		var xAxis = true;
+		var yAxis = false;
+		var zAxis = false;
+		
+		var thetaSum=0;
+		var positivo=false;
+		
+		init();
+		animate();
+	
+		function init(){
+			scene = new THREE.Scene();
+			aspect = window.innerWidth / window.innerHeight;
+			camera = new THREE.PerspectiveCamera( 45, aspect, 0.1, 1000);
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+				  			
+			//EVENTOS DE TECLADO
+			
+			var onKeyDown = function ( event ) {
+				switch ( event.keyCode ) {
+					case 38: // TRASLADAR ADELANTE
+						upArrow = true;
+						break;
+					case 40: // TRASLADAR ATRÁS
+						downArrow = true;
+						break;
+					case 83: // ESCALA AGRANDAR
+						scaleUp = true;
+						break;
+					case 87: // ESCALA DISMINUIR
+						scaleDown = true;
+						break;
+					case 37: // ROTAR CW
+						leftArrow = true;
+						break;
+					case 39: // ROTAR CCW
+						rightArrow = true;
+						break;
+					case 88: // SELECCIONAR EJE X DE ROTACION
+						yAxis = false;
+						zAxis = false;
+						xAxis = true;
+						break;
+					case 89: // SELECCIONAR EJE Y DE ROTACION
+						xAxis = false;
+						zAxis = false;
+						yAxis = true;
+						break;
+					case 90: // SELECCIONAR EJE Z DE 
+						xAxis = false;
+						yAxis = false;
+						zAxis = true;
+						break;
+				}
+			};	  
+		  			
+			var onKeyUp = function ( event ) {
+				switch ( event.keyCode ) {
+					case 38: // TRASLADAR
+						upArrow = false;
+						break;
+					case 40: // TRASLADAR
+						downArrow = false;
+						break;
+					case 37: // ROTAR CW
+						leftArrow = false;
+						break;
+					case 39: // ROTAR CCW
+						rightArrow = false;
+						break;
+					case 83: // ESCALA AGRANDAR
+						scaleUp = false;
+						break;
+					case 87: // ESCALA DISMINUIR
+						scaleDown = false;
+						break;
+				}
+			};	  	
+			
+			document.addEventListener( 'keydown', onKeyDown, false );
+			document.addEventListener( 'keyup', onKeyUp, false );
+			
+			//ELEMENTOS DE ESCENA
+							  
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+			var color1 = new THREE.Color( 0xFFFFFF );
+		  	var color2 = new THREE.Color( 0x333333 );
+		  	var colorR = new THREE.Color( 0xAA0000 );
+		  	var colorG = new THREE.Color( 0x00AA00 );
+		  	var colorB = new THREE.Color( 0x0000AA );
+			var colorRd = new THREE.Color( 0xAA6666 );
+		  	var colorGd = new THREE.Color( 0x66AA66 );
+		  	var colorBd = new THREE.Color( 0x6666AA );
+		  
+		  	//CREAR LAS GRILLAS PARA EL ESCENARIO
+		  	var axesHelper1 = new THREE.AxesHelper( size/10 );
+			var axesHelper2 = new THREE.AxesHelper( size/10 );
+			var axesHelper3 = new THREE.AxesHelper( size/10 );
+		  	var gridHelperXY = new THREE.GridHelper( size, divisions, color1, color1);
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2 );
+		  	var gridHelperYZ = new THREE.GridHelper( size, divisions, color2, color2 );
+            
+            //ROTARLAS PARA QUE QUEDEN EN EL ESPACIO ADECUADO
+            gridHelperXY.rotateOnWorldAxis ( x, THREE.Math.degToRad(90) );
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );
+            gridHelperYZ.rotateOnWorldAxis ( z, THREE.Math.degToRad(90) );
+            
+            //CREAR LAS FLECHAS QUE INDICAN LOS EJES DE COORDENADAS 3D
+            var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+            var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );
+            var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+			
+			//CREAR LAS GEOMETRÍAS
+			geometry1 = new THREE.SphereGeometry( 1, 18, 18 );
+			geometry2 = new THREE.CylinderGeometry( .05, .05, 1.5, 32 );//cilindro musculo
+			geometry3 = new THREE.CylinderGeometry( .02, .05, 1.5, 32 );//cilindro pata
+			geometry4 = new THREE.SphereGeometry( .5, 15, 15 );
+			geometry5 = new THREE.SphereGeometry( 1.5, 15, 15 );
+			geometry6 = new THREE.SphereGeometry( .1, 15, 15 );
+			
+			//CREAR LOS MATERIALES
+			var material1 = new THREE.MeshBasicMaterial( { color: 0xFF0B00 } ); // rojo
+			var material2 = new THREE.MeshBasicMaterial( { color: 0x0026FF } ); // azul
+			var material3 = new THREE.MeshBasicMaterial( { color: 0xBB1700 } ); //rojo oscuro
+			var material4 = new THREE.MeshBasicMaterial( { color: 0x805500 } ); // negro
+			
+			//CREAR LOS OBJETOS
+			hips = new THREE.Mesh( geometry1, material1 );	//esfera
+			var head = new THREE.Mesh( geometry4, material3);
+			var cola=new THREE.Mesh( geometry5, material3);
+			var nariz=new THREE.Mesh( geometry6, material4);
+			
+			leftFoot = hips.clone();
+			//pata 1 der
+			leftLeg = new THREE.Mesh( geometry2, material2 ); //CILINDRO
+			leftLeg2 = new THREE.Mesh( geometry3, material2 ); //CILINDRO
+			pata1d= new THREE.Mesh(geometry3,material2);
+			//pata 2 deree
+			mus2d= new THREE.Mesh(geometry2,material2);
+			pata2d= new THREE.Mesh(geometry3,material2);
+			//pata 3 der
+			mus3d= new THREE.Mesh(geometry2,material2);
+			pata3d= new THREE.Mesh(geometry3,material2);
+			//pata 4 dere
+			mus4d= new THREE.Mesh(geometry2,material2);
+			pata4d= new THREE.Mesh(geometry3,material2);
+			//pata 1 izq
+			mus1i= new THREE.Mesh(geometry2,material2);
+			pata1i= new THREE.Mesh(geometry3,material2);
+			//pata 2 izq
+			mus2i= new THREE.Mesh(geometry2,material2);
+			pata2i= new THREE.Mesh(geometry3,material2);
+			//pata 3 izq
+			mus3i= new THREE.Mesh(geometry2,material2);
+			pata3i= new THREE.Mesh(geometry3,material2);
+			//pata 3 izq
+			mus4i= new THREE.Mesh(geometry2,material2);
+			pata4i= new THREE.Mesh(geometry3,material2);
+			//axesHelper1 = new THREE.AxesHelper( 1 );
+			
+			// cuerpo
+			hips.applyMatrix( new THREE.Matrix4().makeTranslation(0,.5,0) );
+			head.applyMatrix( new THREE.Matrix4().makeTranslation(0,0,1) );
+			cola.applyMatrix( new THREE.Matrix4().makeTranslation(0,.5,-1.5) );
+			nariz.applyMatrix( new THREE.Matrix4().makeTranslation(0,0,1.5) );
+			
+			//muslo der
+			leftLeg.applyMatrix( new THREE.Matrix4().makeTranslation(-.2,-1,0) );
+			mus2d.applyMatrix(new THREE.Matrix4().makeTranslation(-.2,-1,-.37));
+			mus3d.applyMatrix(new THREE.Matrix4().makeTranslation(-.2,-1,-.12));
+			mus4d.applyMatrix(new THREE.Matrix4().makeTranslation(-.2,-1,.25));
+			//muslo izq
+			mus1i.applyMatrix( new THREE.Matrix4().makeTranslation(.2,-1,0) );
+			mus2i.applyMatrix(new THREE.Matrix4().makeTranslation(.2,-1,-.37));
+			mus3i.applyMatrix(new THREE.Matrix4().makeTranslation(.2,-1,-.12));
+			mus4i.applyMatrix(new THREE.Matrix4().makeTranslation(.2,-1,.25));
+			
+			axesHelper1.applyMatrix( new THREE.Matrix4().makeTranslation(0,-.75,0) );
+			
+			// pata der
+			leftLeg2.applyMatrix( new THREE.Matrix4().makeTranslation(-0,-.75,0) );
+			pata1d.applyMatrix( new THREE.Matrix4().makeTranslation(-1.4,1.7, 0));
+			pata2d.applyMatrix( new THREE.Matrix4().makeTranslation(-1.4,1.7, -.37));
+			pata3d.applyMatrix(new THREE.Matrix4().makeTranslation(-1.4,1.7,-.12));
+			pata4d.applyMatrix(new THREE.Matrix4().makeTranslation(-1.4,1.7, .25));
+			// pata izq
+			//leftLeg2.applyMatrix( new THREE.Matrix4().makeTranslation(0,-.75,0) );
+			pata1i.applyMatrix( new THREE.Matrix4().makeTranslation(1.4,1.7, 0));
+			pata2i.applyMatrix( new THREE.Matrix4().makeTranslation(1.4,1.7, -.37));
+			pata3i.applyMatrix(new THREE.Matrix4().makeTranslation(1.4,1.7,-.12));
+			pata4i.applyMatrix(new THREE.Matrix4().makeTranslation(1.4,1.7, .25));
+			
+			//enlazar
+			hips.add(head, cola, nariz);
+			hips.add(leftLeg);
+			hips.add(mus2d);
+			hips.add(mus3d);
+			hips.add( mus4d);
+			hips.add(mus1i);
+			hips.add(mus2i);
+			hips.add(mus3i); 
+			hips.add(mus4i);
+			hips.add(leftLeg2);
+			hips.add(pata2d);
+			hips.add( pata3d);
+			hips.add(pata4d);
+			hips.add(pata1i);
+			hips.add(pata2i);
+			hips.add(pata3i);
+			hips.add(pata4i);
+			
+			leftLeg.add(axesHelper1);			
+			axesHelper1.add(leftLeg2);
+			
+			// camiar sentido de patas
+			var alfa=120*Math.PI/180;
+			var alfasen = Math.sin(alfa);
+			var alfacos= Math.cos(alfa);
+
+			var gama=-120*Math.PI/180;
+			var gamasen = Math.sin(gama);
+			var gamacos = Math.cos(gama);
+
+
+			var pxy = new THREE.Matrix4();
+			var pxy2 = new THREE.Matrix4();
+
+		//cambiar sentido muslo
+		pxy.set( 	alfacos, -alfasen,  0, 0,    //XY
+					alfasen, alfacos,0, 0, 
+					0, 0, 1, 0,
+					0,  0,  0, 1 );
+			leftLeg.applyMatrix(pxy);
+			mus2d.applyMatrix(pxy);
+			mus3d.applyMatrix(pxy);	
+			mus4d.applyMatrix(pxy);				
+			pata1i.applyMatrix(pxy);
+			pata2i.applyMatrix(pxy);
+			pata3i.applyMatrix(pxy);
+			pata4i.applyMatrix(pxy);
+		//cambiar sentido pata	
+		pxy2.set( 	gamacos, -gamasen,  0, 0,
+					gamasen, gamacos,0, 0, 
+					0, 0, 1, 0,
+					0,  0,  0, 1 );	
+			leftLeg2.applyMatrix(pxy2);
+			pata1d.applyMatrix(pxy2);
+			pata2d.applyMatrix(pxy2);
+			pata3d.applyMatrix(pxy2);
+			pata4d.applyMatrix(pxy2);
+			mus1i.applyMatrix(pxy2);			
+			mus2i.applyMatrix(pxy2);
+			mus3i.applyMatrix(pxy2);	
+			mus4i.applyMatrix(pxy2);
+
+			
+			
+		  	//AGREGAR A LA ESCENA
+            scene.add( gridHelperXZ );
+		  	scene.add( arrowX );	
+		  	scene.add( arrowY );	
+		  	scene.add( arrowZ );	
+			scene.add( hips );
+			
+			//MOVER LA CAMARA
+			camera.position.x = 10;
+			camera.position.y = 3;	 
+		  	camera.position.z = 10;			
+		  	camera.lookAt( origin );
+			
+			renderer.render( scene, camera );
+			}
+    
+    function animate() {
+        render();
+        requestAnimationFrame( animate );
+    }
+    
+    function render(){
+        var dtime = Date.now()-startTime;
+		var tx=0, ty=0, tz=0;	//Variables para traslacion
+		var sc = 1;				//Variable para escala
+		var theta=0;			//Variable para ángulo de rotacion de piernas
+		var sigma=0;			//Variable para ángulo de rotación de caderas
+		
+		if(thetaSum>=20*Math.PI/180)
+			positivo = false;
+		if(thetaSum<=-20*Math.PI/180)
+			positivo = true;
+		
+		if(upArrow) {
+			tx=0; ty=0; tz=.1;
+			if(positivo)
+				theta = .1;
+			else
+				theta = -.1;
+		}
+		if(downArrow) {
+			tx=0; ty=0; tz=-.1;
+			if(positivo)
+				theta = .1;
+			else
+				theta = -.1;
+		}
+		thetaSum+=theta;
+		
+		if(rightArrow)
+			sigma = -.1;
+		if(leftArrow)
+			sigma = .1;
+		
+		//MATRIZ DE TRASLACIÓN
+		var t = new THREE.Matrix4();
+		t.set( 	1, 0, 0, tx,
+				0, 1, 0, ty, 
+				0, 0, 1, tz,
+				0, 0, 0, 1	);
+		
+		hips.matrix.multiply(t); 	//APLICAR LA TRASLACIÓN A NIVEL LOCAL
+		
+		//ROTACIONES
+		var ct1 = Math.cos(theta);
+		var ct2 = Math.cos(-theta);
+		var cs = Math.cos(sigma);
+		var st1 = Math.sin(theta);
+		var st2 = Math.sin(-theta);
+		var ss = Math.sin(sigma);
+		var r = new THREE.Matrix4();
+		var r1 = new THREE.Matrix4();
+		var r2 = new THREE.Matrix4();
+
+		//MATRIZ DE ROTACIÓN EN EJE Y
+		r.set( 	   cs,  0, ss, 0,
+					0,  1,  0, 0, 
+				  -ss,  0, cs, 0,
+					0,  0,  0, 1 );	
+		//MATRICES DE ROTACIÓN EN EJE LOCAL DE PIERNAS	
+		r1.set( 	1,  0,  0, 0,
+					0, ct1,-st1, 0, 
+					0, st1, ct1, 0,
+					0,  0,  0, 1 );	
+		r2.set( 	1,  0,  0, 0,
+					0, ct2,-st2, 0, 
+					0, st2, ct2, 0,
+					0,  0,  0, 1 );							
+		
+		//ROTACION EN UN EJE PARALELO
+		var tempMatrix = new THREE.Matrix4();
+		tempMatrix.copyPosition( hips.matrix );
+		hips.applyMatrix( new THREE.Matrix4().getInverse(tempMatrix) );
+		hips.applyMatrix(r);
+		hips.applyMatrix( tempMatrix );
+
+		//aplicar rotacion muslos
+		leftLeg.applyMatrix(r1);
+		mus2d.applyMatrix(r1);
+		mus3d.applyMatrix(r1);
+		mus4d.applyMatrix(r1);
+		mus1i.applyMatrix(r1);		
+		mus2i.applyMatrix(r1);
+		mus3i.applyMatrix(r1);
+		mus4i.applyMatrix(r1);
+		
+		//ROTACION EN UN EJE PARALELO
+		var tempMatrix2 = new THREE.Matrix4();
+		tempMatrix2.copyPosition( axesHelper1.matrix );
+		// derecha
+		
+		//aplicar rotacion patas
+		leftLeg2.applyMatrix( new THREE.Matrix4().getInverse(tempMatrix2) );
+		leftLeg2.applyMatrix(r1);
+		leftLeg2.applyMatrix( tempMatrix2 );
+		
+		//pata 2
+		pata2d.applyMatrix(new THREE.Matrix4().getInverse(tempMatrix2) );
+		pata2d.applyMatrix(r1);
+		pata2d.applyMatrix(tempMatrix2);
+		//pata 3
+		pata3d.applyMatrix(new THREE.Matrix4().getInverse(tempMatrix2) );
+		pata3d.applyMatrix(r1);
+		pata3d.applyMatrix(tempMatrix2);
+		//pata 3
+		pata4d.applyMatrix(new THREE.Matrix4().getInverse(tempMatrix2) );
+		pata4d.applyMatrix(r1);
+		pata4d.applyMatrix(tempMatrix2);
+		
+		// izqui
+		//pata 1
+		pata1i.applyMatrix(new THREE.Matrix4().getInverse(tempMatrix2) );
+		pata1i.applyMatrix(r1);
+		pata1i.applyMatrix(tempMatrix2);
+		//pata 2
+		pata2i.applyMatrix(new THREE.Matrix4().getInverse(tempMatrix2) );
+		pata2i.applyMatrix(r1);
+		pata2i.applyMatrix(tempMatrix2);
+		//pata 3
+		pata3i.applyMatrix(new THREE.Matrix4().getInverse(tempMatrix2) );
+		pata3i.applyMatrix(r1);
+		pata3i.applyMatrix(tempMatrix2);
+		//pata 3
+		pata4i.applyMatrix(new THREE.Matrix4().getInverse(tempMatrix2) );
+		pata4i.applyMatrix(r1);
+		pata4i.applyMatrix(tempMatrix2);
+		
+        camera.lookAt( 0, 0, 0 );
+        renderer.render( scene, camera );
+    }
+    </script>
+  </body>
+</html>
