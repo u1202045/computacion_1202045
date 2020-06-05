@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+				<style>
+		</style>
+	</head>
+	<body>
+
+		<div id="my-div">
+		
+		</div>
+
+		<script src="js/three.js"></script>
+		<script src="js/controls/OrbitControls.js"></script>
+		<script src="js/csg.js"></script>
+		<script src="js/THREE.CSG.js"></script>
+    	<script>
+		
+		var camera, scene, rederer, controls, color;
+		var startTime = Date.now();
+		var gridHelper, modelo;
+		var light1, light2, light3, light14, light5, light6, light7, light8, light9;
+		var persona;
+		
+		var clock = new THREE.Clock();
+		
+		var upArrow = false;
+		var downArrow = false;
+		var leftArrow = false;
+		var rightArrow = false;
+		var scaleUp = false;
+		var scaleDown = false;
+		var xAxis = true;
+		var yAxis = false;
+		var zAxis = false;
+		
+		
+		var thetaSum=0;
+		var positivo=false;
+		
+		init();
+		animate();
+
+		function init() {
+		
+			camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+			camera.position.set( 200, 100, 50 );
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0x000000);
+			var ambient = new THREE.AmbientLight( 0xffffff );
+            scene.add( ambient );
+			
+			controls = new THREE.OrbitControls( camera, render.domElement );
+			
+			var onKeyDown = function ( event ) {
+				switch ( event.keyCode ) {
+					case 38: // TRASLADAR ADELANTE
+						upArrow = true;
+						break;
+					case 40: // TRASLADAR ATRÁS
+						downArrow = true;
+						break;
+					case 39: // ROTAR CW
+						leftArrow = true;
+						break;
+					case 37: // ROTAR CCW
+						rightArrow = true;
+						break;
+						}
+					};
+			var onKeyUp = function ( event ) {
+				switch ( event.keyCode ) {
+					case 38: // TRASLADAR
+						upArrow = false;
+						break;
+					case 40: // TRASLADAR
+						downArrow = false;
+						break;
+					case 39: // ROTAR CW
+						leftArrow = false;
+						break;
+					case 37: // ROTAR CCW
+						rightArrow = false;
+						break;
+					}
+				};
+				
+			document.addEventListener( 'keydown', onKeyDown, false );
+			document.addEventListener( 'keyup', onKeyUp, false );			
+			
+			luz(light1, 25, 15, 30)
+			luz(light2, -25, 15, -30)
+			luz(light3, -35, 15, 30)
+			luz(light14, 35, 15, -30)
+				
+			luces();
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer = new THREE.WebGLRenderer();
+				
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				
+		//declarar geomrias	
+				
+		var geometryecenario = new THREE.CylinderGeometry( 35, 35, 10, 32 );
+		var geometryperosnaje = new THREE.CylinderGeometry( 1.2, 1.2, 7, 32 );
+		var geometriasillas = new THREE.BoxBufferGeometry(18, 6, 7 );
+		var geometrycircular = new THREE.CircleGeometry( 50, 32 );
+		var geometrycircular2 = new THREE.CircleGeometry( 200, 32 );
+				
+		//materiales
+		
+		var material = new THREE.MeshStandardMaterial( {color: 0xffffff} );
+		var material2 = new THREE.MeshStandardMaterial( {color: 0x420400} );
+		var material3 = new THREE.MeshStandardMaterial( {color: 0xFF840A} );
+		var material5 = new THREE.MeshStandardMaterial( {color: 0xFA3000} );
+		var material6 = new THREE.MeshStandardMaterial( {color: 0x2443B1});
+		var material7 = new THREE.MeshToonMaterial( {color: 0x2443B1});
+		
+		var blockbase13 = new THREE.TextureLoader().load( 'textures/textura13.png' );
+		var blockNormal13 = new THREE.TextureLoader().load( 'textures/normal13.png' );
+		
+		var blockbase12 = new THREE.TextureLoader().load( 'textures/textura12.png' );
+		var blockNormal12 = new THREE.TextureLoader().load( 'textures/normal12.png' );
+		
+		var blockbase6 = new THREE.TextureLoader().load( 'textures/textura9.png' );
+		var blockNormal6 = new THREE.TextureLoader().load( 'textures/normal9.png' );
+				
+        blockbase6.wrapS = THREE.RepeatWrapping;
+		blockbase6.wrapT = THREE.RepeatWrapping;
+		blockbase6.repeat.set( 20, 20 );
+
+		blockNormal6.wrapS = THREE.RepeatWrapping;
+		blockNormal6.wrapT = THREE.RepeatWrapping;
+		blockNormal6.repeat.set( 20, 20 );
+		
+		var floormaterial = new THREE.MeshStandardMaterial( { 
+        color: 0xFFFFFF, 
+		roughnessMap : 1,
+		 map: blockbase6,
+		normalMap: blockNormal6
+	} );
+	
+		var brickMaterial12 = new THREE.MeshPhongMaterial( { 
+        color: 0x420400, 
+		map: blockbase12,
+		normalMap: blockNormal12
+		} );
+		
+		var brickMaterial13 = new THREE.MeshPhongMaterial( { 
+        color: 0xFA3000, 
+		map: blockbase13,
+		normalMap: blockNormal13
+		} );
+		
+		
+		//declarar materiales
+		var ecenario = new THREE.Mesh( geometryecenario, brickMaterial13 );
+		var piso = new THREE.Mesh( geometrycircular, brickMaterial12 );
+		var piso2 = new THREE.Mesh( geometrycircular2, floormaterial );
+		var persona = new THREE.Mesh( geometryperosnaje, material3 );
+		piso.rotation.x = -90 * Math.PI / 180
+		piso.translateZ(-5);
+		piso2.rotation.x = -90 * Math.PI / 180
+		piso2.translateZ(-6);
+		silla();
+		persona.translateY(8)
+		
+		scene.add(ecenario, piso, piso2, persona);
+		}
+		
+			function luz(luz, x, y, z){
+//luces
+				var geometrypost = new THREE.BoxBufferGeometry( 10, 40, 4);
+				var sphere = new THREE.SphereBufferGeometry( .5, 16, 8 );
+				//var geometrypostes = new THREE.CylinderGeometry( 5, .4, 15, 32 );
+				
+				var blockbase6 = new THREE.TextureLoader().load( 'textures/textura5.png' );
+				var blockNormal6 = new THREE.TextureLoader().load( 'textures/normal5.png' );
+				var spotLight;
+		
+            blockbase6.wrapS = THREE.RepeatWrapping;
+			blockbase6.wrapT = THREE.RepeatWrapping;
+			blockbase6.repeat.set( 4, 10 );
+
+			blockNormal6.wrapS = THREE.RepeatWrapping;
+			blockNormal6.wrapT = THREE.RepeatWrapping;
+			blockNormal6.repeat.set( 4, 10 );
+			
+			var floormaterial = new THREE.MeshStandardMaterial( { 
+                color: 0xFFFFFF, 
+				roughnessMap : 1,
+			    map: blockbase6,
+				normalMap: blockNormal6
+
+			} );
+				
+				//var poste = new THREE.Mesh( geometrypostes, material );
+				var torre = new THREE.Mesh( geometrypost, floormaterial );
+
+				torre.translateZ(z);
+				torre.translateX(x);
+				torre.translateY(15);
+				
+				torre.rotation.y=30 * Math.PI / 180
+				
+				spotLight = new THREE.SpotLight( 0xffffff, 1 );
+				spotLight.position.set( x, 35, z);
+				spotLight.angle = Math.PI / 4;
+				spotLight.penumbra = 0.0005;
+				spotLight.decay = 1;
+				spotLight.distance = 100;
+				
+				spotLight.shadow.mapSize.width = 1024;
+				spotLight.shadow.mapSize.height = 1024;
+				
+				spotLight.shadow.camera.near = 500;
+				spotLight.shadow.camera.far = 4000;
+				spotLight.shadow.camera.fov = 30;
+				
+				scene.add( spotLight, torre );
+				circo()
+				//lightHelper = new THREE.SpotLightHelper( spotLight );
+				//scene.add( lightHelper );
+}
+		
+		function silla(){
+		
+		var geometrysilla = new THREE.BoxBufferGeometry( 5, 5, 5);
+		
+		var blocksBase = new THREE.TextureLoader().load( 'textures/textura14.png' );
+		var blocksNormal = new THREE.TextureLoader().load( 'textures/normal14.png' );
+		
+            blocksBase.wrapS = THREE.RepeatWrapping;
+			blocksBase.wrapT = THREE.RepeatWrapping;
+			blocksBase.repeat.set( 4, 10 );
+
+			blocksNormal.wrapS = THREE.RepeatWrapping;
+			blocksNormal.wrapT = THREE.RepeatWrapping;
+			blocksNormal.repeat.set( 4, 10 );
+			
+			var floormaterial = new THREE.MeshStandardMaterial( { 
+                color: 0xFA3000, 
+				roughnessMap : 1,
+			    map: blocksBase,
+				normalMap: blocksNormal
+
+			} );
+
+		var silla = new THREE.Mesh( geometrysilla, floormaterial );
+		var  max=1100, radio=0, aum=30, c=5;
+		for(var j=12; j<40; j+=2){
+		for( var i = 0; i < 10; i++ ){
+				for( var theta=0; theta < max; theta += aum ){
+					var silla = new THREE.Mesh( geometrysilla, floormaterial );
+					silla.position.x = ( 5 * Math.cos(theta) + radio )*j;
+					silla.position.z = ( 5 * Math.sin(theta) + radio )*j;
+					silla.position.y=c;
+					scene.add(silla);
+					}
+					c= c+0.3
+				}
+			}
+
+		}
+		
+		
+		function luces (){
+				var sphere = new THREE.SphereBufferGeometry( 0.5, 16, 8 );
+
+				//lights
+
+				light1 = new THREE.PointLight( 0x000000, 2, 50 );
+				light1.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xffffff } ) ) );
+				scene.add( light1 );
+
+				light2 = new THREE.PointLight( 0x000000, 2, 50 );
+				light2.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xffffff } ) ) );
+				scene.add( light2 );
+
+				light3 = new THREE.PointLight( 0x000000, 2, 50 );
+				light3.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xffffff } ) ) );
+				scene.add( light3 );
+
+				light4 = new THREE.PointLight( 0x000000, 2, 50 );
+				light4.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xffffff } ) ) );
+				scene.add( light4 );
+
+		}
+
+		function circo(){
+						var closedSpline = new THREE.CatmullRomCurve3( [ //estrella
+					new THREE.Vector3( 0, 50, 0 ),
+					new THREE.Vector3(  0,  -280, 0 ),
+					new THREE.Vector3(  280,  -280, 0 ),
+					//new THREE.Vector3( 50, 20, 0 ),
+					new THREE.Vector3( 280, 50, 0 ),
+				] );
+
+				closedSpline.curveType = 'catmullrom';
+				closedSpline.closed = true;
+				
+
+				var extrudeSettings = {
+					steps: 400,
+					bevelEnabled: false,
+					extrudePath: closedSpline
+				};
+				
+			var pts = [], count = 5;
+
+				for ( var i = 0; i < count; i ++ ) {
+					var l = 20;
+					var a = 2 * i / count * Math.PI;
+					pts.push( new THREE.Vector2( Math.cos( a ) * l, Math.sin( a ) * l ) );
+				}
+				
+				var shape = new THREE.Shape( pts );
+				var geometry_md = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings );
+				
+				var materialExt= new THREE.MeshStandardMaterial( { 
+				color: 0xAA3333, 
+				metalness: 0.5, 
+				roughness: 0.1,
+				opacity: 0.75,
+				transparent: true			
+			} );
+				
+				var mesh_md = new THREE.Mesh( geometry_md, materialExt);
+
+			//mesh_md.rotation.y=-180*Math.PI /180
+			mesh_md.rotation.x=-90*Math.PI /180;
+			mesh_md.translateX(-140);
+			mesh_md.translateY(100);
+			mesh_md.translateZ(40);
+			scene.add( mesh_md);
+			
+		//
+				var closedSpline = new THREE.CatmullRomCurve3( [ 
+				new THREE.Vector3(0, 36, 0 ),
+				new THREE.Vector3(0, 34, 0 ),
+				new THREE.Vector3(0, 32, 0 ),
+				] );
+
+				closedSpline.curveType = 'catmullrom';
+				closedSpline.closed = false;
+				
+				var extrudeSettings = {
+					steps: 400,
+					amount: 1,
+					bevelEnabled: false,
+					bevelThickness: 1,
+					extrudePath: closedSpline
+				};
+
+
+			var pts = [], numPts = 5;
+
+			for ( var i = 0; i < numPts * 2; i +=1 ) {
+					var l = i % 2 == 1 ? 28 : 46;
+					var a = i / numPts * Math.PI;
+					pts.push( new THREE.Vector2( Math.cos( a ) * l, Math.sin( a ) * l ) );
+				}
+				
+				var shape = new THREE.Shape( pts );
+				var geometry_md = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings );
+			
+			var materialExt= new THREE.MeshStandardMaterial( { 
+				color: 0xAA3333, 
+				metalness: 0.5, 
+				roughness: 0.1,
+				opacity: 0.75,
+				transparent: true			
+			} );
+			
+			var mesh = new THREE.Mesh( geometry_md, materialExt ) ;
+			mesh.rotation.y=-30*Math.PI /180;
+			scene.add( mesh );		
+			
+		  }
+	
+	
+	
+		function animate() {
+        render();
+		render2();
+		controls.update();
+        requestAnimationFrame( animate );
+    	}
+    
+	
+    	function render(){
+
+        renderer.render( scene, camera );
+		
+		camera.lookAt( 0, 0, 0 );
+		
+		
+		var tx=0, ty=0, tz=0;	//Variables para traslacion
+		var sigma=0;			//Variable para ángulo de rotación de caderas
+
+				if(upArrow) {
+ 					tz=+.15;
+				}
+				if(downArrow) {
+					tz=-.15;
+				}
+				if(rightArrow)
+					sigma = -.1;
+				if(leftArrow)
+					sigma = .1;
+
+
+				var t = new THREE.Matrix4();
+				t.set( 	1, 0, 0, tx,
+						0, 1, 0, ty, 
+						0, 0, 1, tz,
+						0, 0, 0, 1	);
+
+			//persona.matrix.multiply(t);
+			//targetpersona.matrix.multiply(t);
+
+			var cs = Math.cos(sigma);
+			var ss = Math.sin(sigma);
+
+			var r = new THREE.Matrix4();
+
+			//MATRIZ DE ROTACIÓN EN EJE Y
+			r.set( cs,  0, ss, 0,
+				    0,  1,  0, 0, 
+				  -ss,  0, cs, 0,
+				   	0,  0,  0, 1 );	
+
+			var tempMatrix = new THREE.Matrix4();
+			//tempMatrix.copyPosition( persona.matrix );
+			//persona.applyMatrix( new THREE.Matrix4().getInverse(tempMatrix) );
+			//persona.applyMatrix(r);
+			//persona.applyMatrix( tempMatrix );
+			
+			//luces 
+			var time = Date.now() * 0.0005;
+			var delta = clock.getDelta();
+			
+				light1.position.x = Math.sin( time * 1 ) * 50;
+				light1.position.y = Math.cos( time * 1 ) * 100;
+				light1.position.z = Math.cos( time * 1 ) * 80;
+
+				light2.position.x = Math.cos( time * 1.5 ) * 50;
+				light2.position.y = Math.sin( time * 1.5 ) * 40;
+				light2.position.z = Math.sin( time * 1.5 ) * 80;
+
+				light3.position.x = Math.sin( time * 2 ) * 20;
+				light3.position.y = Math.cos( time * 2 ) * 150;
+				light3.position.z = Math.sin( time * 2 ) * 100;
+
+				light4.position.x = Math.sin( time * 1.4 ) * 20;
+				light4.position.y = Math.cos( time * 1.4 ) * 30;
+				light4.position.z = Math.sin( time * 1.8 ) * 50;
+				
+		}
+		function render2(){
+
+		}
+		</script>
+	</body>
+</html>	
