@@ -1,0 +1,301 @@
+<!parcial:1 html>
+<html>
+    <head>
+        <title>Transformaciones</title>
+        <style>
+            html, body { margin: 0; padding: 0; overflow: hidden; }
+            #info {
+                position: absolute;
+                padding: 10px;
+                width: 100%;
+                text-align: center;
+                color: #FFFFFF;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="info">Parcial 1<br/>
+        </div>
+    <script src="js/three.min.js"></script>
+    <script>
+		var scene, aspect, camera, renderer;
+		var geometry;
+		var BloqueA, BloqueCon, BloqueB, BloqueD, AulaMax, Plaza, Canchas, Leyenda, luz1, luz2, luz3, luz4, tub1, tub2, carro, paro, salida, parque, arco1, arco2, carretera, carretera2, carretera3;
+		
+		var startTime = Date.now();
+				
+		var upArrow = false;
+		var downArrow = false;
+		var leftArrow = false;
+		var rightArrow = false;
+		var sButton = false;
+		var wButton = false;
+		var xAxis = true;
+		var yAxis = false;
+		var zAxis = false;
+		
+		init();
+		animate();
+	
+		function init(){
+			scene = new THREE.Scene();
+			aspect = window.innerWidth / window.innerHeight;
+			camera = new THREE.PerspectiveCamera( 45, aspect, 0.1, 1000);
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+				  			
+			//EVENTOS DE TECLADO
+			
+			var onKeyDown = function ( event ) {
+				switch ( event.keyCode ) {
+					case 38: // Y POSITIVE - UP ARROW
+						upArrow = true;
+						break;
+					case 40: // Y NEGATIVE - DOWN ARROW
+						downArrow = true;
+						break;
+					case 37: // Y POSITIVE - UP ARROW
+						leftArrow = true;
+						break;
+					case 39: // Y NEGATIVE - DOWN ARROW
+						rightArrow = true;
+						break;
+					case 88: // SELECCIONAR EJE X DE ROTACION
+						xAxis = true;
+						yAxis = false;
+						zAxis = false;
+						break;
+					case 89: // SELECCIONAR EJE Y DE ROTACION
+						xAxis = false;
+						yAxis = true;
+						zAxis = false;
+						break;
+					case 90: // SELECCIONAR EJE Z DE 
+						xAxis = false;
+						yAxis = false;
+						zAxis = true;
+						break;
+				}
+			};	  
+		  			
+			var onKeyUp = function ( event ) {
+			switch ( event.keyCode ) {
+				case 38:
+				upArrow = false;
+				break;
+				case 40:
+				downArrow = false;
+				break;
+				case 39:
+				rightArrow = false;
+				break;
+				case 37:
+				leftArrow = false;
+				break;
+				case 87:
+				rightArrow = false;
+				break;
+				case 83:
+				leftArrow = false;
+				break;
+				}
+			};	 
+			
+			
+			document.addEventListener( 'keydown', onKeyDown, false );
+			document.addEventListener( 'keyup', onKeyUp, false );
+			
+			//ELEMENTOS DE ESCENA
+							  
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+			var color1 = new THREE.Color( 0xFFFFFF );
+		  	var color2 = new THREE.Color( 0x333333 );
+		  	var colorR = new THREE.Color( 0xAA0000 );
+		  	var colorG = new THREE.Color( 0x00AA00 );
+		  	var colorB = new THREE.Color( 0x0000AA );
+			var colorRd = new THREE.Color( 0xAA6666 );
+		  	var colorGd = new THREE.Color( 0x66AA66 );
+		  	var colorBd = new THREE.Color( 0x6666AA );
+		  
+		  	//CREAR LAS GRILLAS PARA EL ESCENARIO
+		  	var axesHelper = new THREE.AxesHelper( size );
+		  	var gridHelperXY = new THREE.GridHelper( size, divisions, color1, color1);
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2 );
+		  	var gridHelperYZ = new THREE.GridHelper( size, divisions, color2, color2 );
+            
+            //ROTARLAS PARA QUE QUEDEN EN EL ESPACIO ADECUADO
+            gridHelperXY.rotateOnWorldAxis ( x, THREE.Math.degToRad(90) );
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );
+            gridHelperYZ.rotateOnWorldAxis ( z, THREE.Math.degToRad(90) );
+            
+            //CREAR LAS FLECHAS QUE INDICAN LOS EJES DE COORDENADAS 3D
+            var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+            var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );
+            var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+			
+			//CREAR LAS GEOMETRÍAS
+			geometry1 = new THREE.BoxGeometry( 2, 4, 2 );
+			geometry2 = new THREE.BoxGeometry( 1, 1, 1 );
+			geometry3 = new THREE.BoxGeometry( 4, 3, 2 );
+			geometry4 = new THREE.BoxGeometry( 4, 4, 0.5 );
+			geometry5 = new THREE.CylinderGeometry( .1, .1, 2, 32 );
+			geometry6 = new THREE.ConeBufferGeometry( 1, 0.5, 32 );
+			geometry7 = new THREE.CylinderGeometry( .07, .07, 1, 32 );
+			geometry8 = new THREE.PlaneBufferGeometry( 5, 10, 20 );
+			geometry9 = new THREE.PlaneBufferGeometry( 1, 1 );
+			geometry10 = new THREE.ConeGeometry( 2, 2, 32 );
+			geometry11 = new THREE.BoxGeometry( 2.5, 1.5, 3 );	
+			geometry12 = new THREE.BoxGeometry( 2, 0.1, 3.5 );
+			geometry13 = new THREE.BoxGeometry( 10, 0.1, 1 );
+			geometry14 = new THREE.BoxGeometry( 1, 0.1, 10 );
+			geometry15 = new THREE.BoxGeometry( 0.8, 0.5, 1.5 );
+			geometry16 = new THREE.BoxGeometry( 1, 0.3, 0.5 );
+			
+			//CREAR LOS MATERIALES
+			var material1 = new THREE.MeshBasicMaterial( { color: 0x6EABFF, vertexColors: THREE.FaceColors } );//azul
+			var material2 = new THREE.MeshBasicMaterial( { color: 0x8A8D96, vertexColors: THREE.FaceColors } );//gris
+			var material3 = new THREE.MeshBasicMaterial( { color: 0x995A41, vertexColors: THREE.FaceColors } );//cafe
+			var material4 = new THREE.MeshBasicMaterial( { color: 0xEB421A, vertexColors: THREE.FaceColors } );//Rojo
+			var material7 = new THREE.MeshBasicMaterial( { color: 0xC03012, vertexColors: THREE.FaceColors } );//vinotinto
+			var material5 = new THREE.MeshBasicMaterial( {color: 0xEB421A} );
+			var material6 = new THREE.MeshBasicMaterial( {color: 0x6EABFF, side: THREE.DoubleSide} );
+			
+			
+			//CREAR LOS OBJETOS
+			
+			BloqueA = new THREE.Mesh( geometry1, material2 );
+			BloqueCon = new THREE.Mesh( geometry2, material3 );
+			BloqueB = new THREE.Mesh( geometry3, material3 );
+			BloqueD = new THREE.Mesh( geometry4, material3 );
+			luz1 = new THREE.Mesh( geometry5, material2 );
+			luz2 = new THREE.Mesh( geometry5, material2 );
+			luz3 = new THREE.Mesh( geometry5, material2 );
+			luz4 = new THREE.Mesh( geometry5, material2 );
+			Leyenda = new THREE.Mesh( geometry6, material5);
+			tub1 = new THREE.Mesh( geometry7, material2 );
+			tub2 = new THREE.Mesh( geometry7, material2 );
+			Canchas = new THREE.Mesh( geometry9, material1 );
+			plaza = new THREE.Mesh( geometry10, material2 );
+			AulaMax = new THREE.Mesh( geometry11, material3 );
+			salida = new THREE.Mesh( geometry2, material2 );
+			parque = new THREE.Mesh( geometry12, material1 );
+			arco1 = new THREE.Mesh( geometry7, material2 );
+			arco2 = new THREE.Mesh( geometry7, material2 );
+			carretera = new THREE.Mesh( geometry13, material2 );
+			carretera2 = new THREE.Mesh( geometry14, material2 );
+			carretera3 = new THREE.Mesh( geometry14, material2 );
+			carro  = new THREE.Mesh( geometry15, material5 );
+			paro = new THREE.Mesh( geometry16, material7 );
+			
+			luz1.applyMatrix(new THREE.Matrix4().makeTranslation(1,1,-0.5));
+			luz2.applyMatrix(new THREE.Matrix4().makeTranslation(-4,0,0));
+			luz3.applyMatrix(new THREE.Matrix4().makeTranslation(-1.2,0,0));
+			luz4.applyMatrix(new THREE.Matrix4().makeTranslation(-2.8,0,0));
+			
+			Canchas.applyMatrix(new THREE.Matrix4().makeTranslation(3,2,-1.9));
+			Leyenda.applyMatrix(new THREE.Matrix4().makeTranslation(2,1,-1));
+			tub1.applyMatrix(new THREE.Matrix4().makeTranslation(-1,-1,0));
+			tub1.applyMatrix(new THREE.Matrix4().makeTranslation(1,0,0));
+			BloqueD.applyMatrix(new THREE.Matrix4().makeTranslation(-1,2,-4));
+			BloqueB.applyMatrix(new THREE.Matrix4().makeTranslation(-1,1.5,-3));
+			BloqueCon.applyMatrix(new THREE.Matrix4().makeTranslation(1.5,0.5,-3));
+			BloqueA.applyMatrix(new THREE.Matrix4().makeTranslation(3,2,-3));
+			AulaMax.applyMatrix(new THREE.Matrix4().makeTranslation(-2,0.5,3));
+			salida.applyMatrix(new THREE.Matrix4().makeTranslation(1,0.3,4));
+			parque.applyMatrix(new THREE.Matrix4().makeTranslation(3,0,3));
+			arco1.applyMatrix(new THREE.Matrix4().makeTranslation(-1,0.2,-1));
+			arco2.applyMatrix(new THREE.Matrix4().makeTranslation(1,0.2,-1));
+			carretera.applyMatrix(new THREE.Matrix4().makeTranslation(0,0.2,0.5));
+			carretera2.applyMatrix(new THREE.Matrix4().makeTranslation(-4.5,0,0));
+			carretera3.applyMatrix(new THREE.Matrix4().makeTranslation(5,0,0));
+			carro.applyMatrix(new THREE.Matrix4().makeTranslation(-4.5,0.5,-4));
+			paro.applyMatrix(new THREE.Matrix4().makeTranslation(0,0.3,0));
+			//Plaza.applyMatrix(new THREE.Matrix4().makeTranslation(3,2,3));
+			
+		
+			luz1.add(luz2, luz3, luz4);
+			Leyenda.add(tub1, tub2);
+			parque.add(arco1,arco2);
+			carretera.add(carretera2, carretera3);
+			carro.add(paro);
+		  	//AGREGAR A LA ESCENA
+            scene.add( gridHelperXZ );
+		  	scene.add( arrowX );	
+		  	scene.add( arrowY );	
+		  	scene.add( arrowZ );	
+			scene.add( BloqueA );
+			scene.add( BloqueCon );
+			scene.add( BloqueB );
+			scene.add( BloqueD );
+			scene.add( luz1);
+			scene.add( Leyenda);
+			scene.add( Canchas);
+			scene.add( Plaza);
+			scene.add( AulaMax);	
+			scene.add( salida);
+			scene.add( parque);
+			scene.add( carretera);
+			scene.add( carro);	
+			//MOVER LA CAMARA
+			camera.position.x = 5;
+			camera.position.y = 20;	 
+		  	camera.position.z = 10;			
+		  	camera.lookAt( origin );
+			}
+    
+    function animate() {
+        render();
+        requestAnimationFrame( animate );
+    }
+    
+    function render(){
+	var tx=0, ty=0, tz=0;
+       // var dtime = Date.now()-startTime;
+		var t=0, s=0;
+		
+		/*var t = new THREE.Matrix4();
+		t.set( 	1, 0, 0, tx,
+				0, 1, 0, ty, 
+				0, 0, 1, tz,
+				0, 0, 0, 1	);
+		carro.matrix.multiply(t);*/	
+		if(upArrow) {
+			t=0.1;
+		}
+		if(downArrow) {
+			t=-0.1;
+		}
+		if(leftArrow) {
+			s=0.1;
+		}
+		if(rightArrow) {
+			s=-0.1;
+		}
+
+		//ROTACIÓN EN EJE X
+		if(xAxis){
+			var a = new THREE.Euler(t,0,0,'XYZ');
+		}
+		//ROTACIÓN EN EJE Y
+		if(yAxis){
+			var a = new THREE.Euler(0,s,0,'XYZ');
+		}
+		//ROTACIÓN EN EJE Z
+		else if (zAxis){
+			var a = new THREE.Euler(0,0,t,'XYZ');
+		}
+		camera.position.applyEuler(a);
+		carro.translateZ(0.02);
+        camera.lookAt( 0, 0, 0 );
+        renderer.render( scene, camera );
+    }
+    </script>
+  </body>
+</html>
