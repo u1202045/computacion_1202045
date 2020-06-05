@@ -1,0 +1,223 @@
+ <!DOCTYPE html>
+<html>
+  <head>
+    <title>Camara Ortografica</title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <script src="js/three.js"></script>
+    <script src="js/controls/OrbitControls.js"></script>
+    <script src='js/libs/dat.gui.min.js'></script>
+    <script>
+		var scene, aspect, camera, camera2, renderer, controls;
+        var mapWidth = 320, mapHeight = 240;
+        var w = window.innerWidth, h = window.innerHeight;
+		var startTime = Date.now();
+		var raycaster = new THREE.Raycaster();
+		var object, cont = 1;
+		var vector = new THREE.Vector3();
+
+		//CREAR GEOMETRIAS
+		var geometrybox = new THREE.BoxGeometry( 4, 4, 4 );
+		var geometrysphere = new THREE.SphereGeometry( 3, 8, 8 );
+		var geometrytorus = new THREE.TorusGeometry( 3, 0.5, 16, 100 );
+		
+		init();
+		animate();
+	
+		function init(){
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0xAAAAAA );
+			aspect = window.innerWidth / window.innerHeight;
+			camera = new THREE.PerspectiveCamera( 45, aspect, 0.1, 1000);
+			camera2 = new THREE.PerspectiveCamera( 45, 1.33, 0.1, 50);
+
+            var helper = new THREE.CameraHelper( camera2 );
+            scene.add( helper );
+			
+			renderer = new THREE.WebGLRenderer({antialias: true});
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			controls = new THREE.OrbitControls( camera, renderer.domElement );
+            
+			/*var vector_0 = new THREE.Vector3(45,45,45);
+			camera2.getWorldDirection( vector );
+			console.log(vector);*/
+			
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+			var color1 = new THREE.Color( 0xFFFFFF );
+		  	var color2 = new THREE.Color( 0x333333 );
+		  	var colorR = new THREE.Color( 0xAA3333 );
+		  	var colorG = new THREE.Color( 0x33AA33 );
+		  	var colorB = new THREE.Color( 0x333366 );
+		  
+		  	//CREAR LAS GRILLAS PARA EL ESCENARIO
+		  	var axesHelper = new THREE.AxesHelper( size );
+		  	var gridHelperXY = new THREE.GridHelper( size, divisions, color1, color1);
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2 );
+		  	var gridHelperYZ = new THREE.GridHelper( size, divisions, color2, color2 );
+            
+            //ROTARLAS PARA QUE QUEDEN EN EL ESPACIO ADECUADO
+            gridHelperXY.rotateOnWorldAxis ( x, THREE.Math.degToRad(90) );
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );
+            gridHelperYZ.rotateOnWorldAxis ( z, THREE.Math.degToRad(90) );
+            
+            //CREAR LAS FLECHAS QUE INDICAN LOS EJES DE COORDENADAS 3D
+            var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+            var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );
+            var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+            
+            //CREAR ILUMINACIÓN
+            var ambient = new THREE.AmbientLight( 0xffffff, 2 );
+            scene.add( ambient );
+            
+            var pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
+            pointLight.position.set( 5, 5, -5 );
+            scene.add( pointLight );
+            
+			//CREAR LAS GEOMETRÍA
+			var geometria = new THREE.Geometry();
+
+			//CREAR LOS MATERIALES
+			var material = new THREE.ParticleBasicMaterial({color:0Xffffff});
+			var meshMaterial = new THREE.MeshStandardMaterial( {color: 0x00ff00} );
+			meshMaterial.vertexColors = THREE.FaceColors;
+
+			//OBJETOS
+			var sphere = new THREE.Mesh( geometrysphere, meshMaterial );
+			var box = new THREE.Mesh( geometrybox, meshMaterial );
+			var torus = new THREE.Mesh( geometrytorus, meshMaterial );
+
+			object = sphere;
+
+			//LINEAS BARRIDO - ESCANEO
+			for (var i = -27.5; i < 27.5; i++){ 
+				for(var j = 20.5; j > -20.5; j--){
+
+				var vertices=[ [0,0,0], [i, j, -50] ];
+				var long_vertices=vertices.length;
+
+				for( k = 0; k < long_vertices; k++ ){
+					x=vertices[k][0];
+					y=vertices[k][1];
+					z=vertices[k][2];
+
+					vector = new THREE.Vector3( x, y, z );
+
+					geometria.vertices.push( vector );
+
+					}
+
+					for(var r=0; r<sphere.geometry.faces.length; r++){
+						if (vector.dot(sphere.geometry.faces[r].normal) > 0){
+							sphere.geometry.computeFaceNormals();
+							//sphere.geometry.faces[r].color = new THREE.Color( 0xff0000 );
+							sphere.geometry.faces.splice( r, 1 );
+						}
+					}
+
+					for(var r=0; r<box.geometry.faces.length; r++){
+						if (vector.dot(box.geometry.faces[r].normal) > 0){
+							box.geometry.computeFaceNormals();
+							//box.geometry.faces[r].color = new THREE.Color( 0xff0000 );
+							box.geometry.faces.splice( r, 2);
+						}
+					}	
+
+					for(var r=0; r<torus.geometry.faces.length; r++){
+						if (vector.dot(torus.geometry.faces[r].normal) > 0){
+							torus.geometry.computeFaceNormals();
+							//torus.geometry.faces[r].color = new THREE.Color( 0xff0000 );
+							torus.geometry.faces.splice( r, 2 );
+						}
+					}
+					raycast(vector);
+				}
+			}
+
+			//CREAR OBJETOS
+			var linea = new THREE.Line( geometria, material );
+
+			//scene.add( linea );
+
+            scene.add( arrowX );
+            scene.add( arrowY );
+            scene.add( arrowZ );
+			
+			sphere.translateZ(-20);
+			sphere.translateX(10);
+
+			box.translateZ(-20);
+			box.translateX(-10);
+			
+			torus.translateZ(-25);
+			torus.translateY(-7.5);
+
+			object = sphere;
+
+			var group = new THREE.Group();
+
+
+			group.add(sphere, box, torus);
+			group.translateZ(-10);
+			scene.add( group );
+			camera.position.x = 5;
+			camera.position.y = 5;
+		  	camera.position.z = 10;
+			
+		  	camera.lookAt( origin );
+			  		
+		}
+
+		function raycast(vector){
+
+			vector.normalize();
+			//var obj = new Array(cont);
+			raycaster = new THREE.Raycaster( vector, vector, 0.1, 50 );
+			//var intersects = raycaster.intersectObjects( scene.children );
+			//var intersects = raycaster.intersectObjects( object, false, obj ); //[ { distance, point, face, faceIndex, object }, ... 
+			//cont ++;
+		}
+
+		function animate() {
+			requestAnimationFrame( animate );
+			controls.update(); // required if controls.enableDamping = true, or if controls.autoRotate = true
+			render();
+		}
+        function render() {
+            renderer.setViewport( 0, 0, w, h );
+            renderer.setScissor( 0, 0, w, h );
+            renderer.render( scene, camera );
+
+            renderer.setViewport( 10, 10, mapWidth, mapHeight );
+            renderer.setScissor( 10, 10, mapWidth, mapHeight );
+            renderer.setScissorTest( true );
+            renderer.render( scene, camera2 );
+			
+			raycaster.setFromCamera( vector, camera2 ); // actualiza el rayo con la posición de la cámara y (el mouse)/vector
+
+			var intersects = raycaster.intersectObjects( scene.children );
+			for ( var i = 0; i < intersects.length; i++ ) {
+				intersects[ i ].object.material.color.set( 0xff0000 );
+			}
+		}
+
+    </script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
