@@ -1,0 +1,317 @@
+ <!DOCTYPE html>
+<html>
+  <head>
+    <title>Ej: Esfera</title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <script src="js/three.js"></script>
+	<script src="js/controls/OrbitControls.js"></script>
+    <script>
+		var scene, aspect, camera, renderer, controls;
+		var startTime = Date.now();
+		var fan;
+		var strip;
+		var tapa;
+		var colorPrin = new THREE.Color (0xFFD56E)
+		
+		class TRIANGLE_FAN{	
+		  constructor( Geometria ){
+		    this.geometria = Geometria;
+			console.log(this.geometria);
+		  }  
+		  draw(color){			
+			for( var i=2; i<this.geometria.vertices.length; i++ ){
+			  this.geometria.faces.push( new THREE.Face3(0,i-1,i) );
+			}
+			this.geometria.computeFaceNormals();
+            var materialFanFront = new THREE.MeshStandardMaterial( { color: color, side: THREE.FrontSide, metalness: 0.5, roughness: 0.1 } );
+            var materialFanBack = new THREE.MeshStandardMaterial( { color: color, side: THREE.BackSide, metalness: 0.5, roughness: 0.1 } );
+			var fan = new THREE.Mesh( this.geometria, materialFanFront );
+            var fan_2 = new THREE.Mesh( this.geometria, materialFanBack );
+			scene.add( fan );
+            scene.add( fan_2 );
+		  }
+		}
+		
+		class TRIANGLE_STRIP{	
+		  constructor( Geometria ){
+		    this.geometria = Geometria;
+			console.log(this.geometria);
+		  }  
+		  draw(color){			
+			for( var i=2; i<this.geometria.vertices.length; i++ ){
+			  this.geometria.faces.push( new THREE.Face3(i-2,i-1,i) );
+			}
+			this.geometria.computeFaceNormals();
+            var materialStripFront = new THREE.MeshStandardMaterial( { color: color, side: THREE.FrontSide, metalness: 0.5, roughness: 0.1 } );
+            var materialStripBack = new THREE.MeshStandardMaterial( { color: color, side: THREE.BackSide, metalness: 0.5, roughness: 0.1 } );
+			var strip = new THREE.Mesh( this.geometria, materialStripFront );
+			var strip_2 = new THREE.Mesh( this.geometria, materialStripBack );
+			scene.add( strip );
+            scene.add( strip_2 );
+		  }
+		}
+		
+		
+		init();
+		animate();
+	
+		function init(){
+			scene = new THREE.Scene();
+			aspect = window.innerWidth / window.innerHeight;
+			camera = new THREE.PerspectiveCamera( 45, aspect, 0.1, 1000);
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			controls = new THREE.OrbitControls( camera, renderer.domElement );
+            				  
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+			var color1 = new THREE.Color( 0xFFFFFF );
+		  	var color2 = new THREE.Color( 0x333333 );
+		  	var colorR = new THREE.Color( 0xAA3333 );
+		  	var colorG = new THREE.Color( 0x33AA33 );
+		  	var colorB = new THREE.Color( 0x333366 );
+			
+		  
+		  	//CREAR LAS GRILLAS PARA EL ESCENARIO
+		  	var axesHelper = new THREE.AxesHelper( size );
+		  	var gridHelperXY = new THREE.GridHelper( size, divisions, color1, color1);
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2 );
+		  	var gridHelperYZ = new THREE.GridHelper( size, divisions, color2, color2 );
+            
+            //ROTARLAS PARA QUE QUEDEN EN EL ESPACIO ADECUADO
+            gridHelperXY.rotateOnWorldAxis ( x, THREE.Math.degToRad(90) );
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );
+            gridHelperYZ.rotateOnWorldAxis ( z, THREE.Math.degToRad(90) );
+            
+            //CREAR LAS FLECHAS QUE INDICAN LOS EJES DE COORDENADAS 3D
+            var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+            var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );
+            var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+			
+			//CREAR ILUMINACIÓN
+            var ambient = new THREE.AmbientLight( 0xffffff, 2 );
+            scene.add( ambient );
+            
+            var pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
+            pointLight.position.set( 5, 5, -5 );
+            scene.add( pointLight );
+			
+			//CREAR LAS GEOMETRÍAS
+			
+            //caja principal
+			//var punto0 = new THREE.Vector3(0,2,0);			
+            var geometria = new THREE.Geometry();
+			var geometria2 = new THREE.Geometry();
+			var radio = 3.0;
+			var res = 4.0;
+			//geometria.vertices.push( punto0 );
+            for( var i = 0; i <= res; i++){
+                var punto = new THREE.Vector3();
+				var punto2 = new THREE.Vector3();
+				punto.x = radio * Math.cos( ( 2 * Math.PI * i )/ res );
+                punto.y = 4
+                punto.z =( radio * Math.sin( ( 2 * Math.PI * i )/ res ));
+				punto2.x = punto.x;
+				punto2.y = 0;
+				punto2.z = punto.z;
+				
+				geometria2.vertices.push( punto );
+				geometria2.vertices.push( punto2 );				
+            }
+			
+			// columna delanteras
+			columna(5.5, 0.8);
+			columna(4.5, 1.8);
+			columna(3.5, 2.8);
+			columna(2.5, 3.8);
+			columna(1.5, 4.8);
+			columna(0.3, 5.8);		
+			
+			// columna traseras
+			columna(-5.5, -0.8);
+			columna(-4.5, -1.8);
+			columna(-3.5, -2.8);
+			columna(-2.5, -3.8);
+			columna(-1.5, -4.8);
+			columna(-0.5, -5.8);
+			
+		// columnas  izquierda
+			columna(-5, -.2);
+			columna(-4.5, 0.4);
+			columna(-4, 1);
+			columna(-3.5, 1.6);
+			columna(-3, 2.2);
+			columna(-2.5, 2.8);
+			columna(-2, 3.4);
+			columna(-1.5, 4);
+			columna(-1, 4.6);
+			columna(-0.5, 5.2);
+			
+		// columnas  derecha
+			columna(5, .2);
+			columna(4.5, -0.4);
+			columna(4, -1);
+			columna(3.5, -1.6);
+			columna(3, -2.2);
+			columna(2.5, -2.8);
+			columna(2, -3.4);
+			columna(1.5, -4);
+			columna(1, -4.6);
+			columna(0.5, -5.2);
+		//techo
+		var punto0 = new THREE.Vector3(0,6,0);			
+            var techo = new THREE.Geometry();
+			var techo2 = new THREE.Geometry();
+			var radio = 6.5;
+			var res = 4.0;
+			techo.vertices.push( punto0 );
+            for( var i = 0; i <= res; i++){
+                var tec = new THREE.Vector3();
+				var tec2 = new THREE.Vector3();
+				tec.x = radio * Math.cos( ( 2 * Math.PI * i )/ res );
+                tec.y = 4
+                tec.z =( radio * Math.sin( ( 2 * Math.PI * i )/ res ));
+				tec2.x = tec.x;
+				tec2.y = 2.9;
+				tec2.z = tec.z;
+				
+				//colmillo1.vertices.push(col1);
+				techo.vertices.push (tec)
+				techo2.vertices.push( tec );
+				techo2.vertices.push( tec2 );				
+            }
+			//cupula
+		/*var puntoc = new THREE.Vector3(0,6,0);			
+            var cupula = new THREE.Geometry();
+			var cupula2 = new THREE.Geometry();
+			var radio3 = 4.7;
+			var res3 = 50.0;
+			cupula.vertices.push( puntoc );
+            for( var i = 0; i <= res3; i++){
+                var cup = new THREE.Vector3();
+				var cup2 = new THREE.Vector3();
+				cup.x = radio3 * Math.cos( ( 2 * Math.PI * i )/ res3 );
+                cup.y = 4
+                cup.z =( radio3 * Math.sin( ( 2 * Math.PI * i )/ res3 ));
+				cup2.x = cup.x;
+				cup2.y = 3.9;
+				cup2.z = cup.z;
+				
+				cupula.vertices.push (cup)
+				cupula2.vertices.push( cup );
+				cupula2.vertices.push( cup2 );				
+            }*/
+			//antena
+			var antena1 = new THREE.Geometry();
+			var antena1_1 = new THREE.Geometry();
+			
+			var radio2 = .05;
+			var res2 = 20.0;
+			
+			for( var i = 0; i <= res2; i++){
+			var ant = new THREE.Vector3();
+				var ant2 = new THREE.Vector3();
+				ant.x = radio2 * Math.cos( ( 2 * Math.PI * i )/ res2 );
+                ant.y = 7
+                ant.z =( radio2 * Math.sin( ( 2 * Math.PI * i )/ res2 ));
+				ant2.x = ant.x;
+				ant2.y = 6;
+				ant2.z = ant.z;
+				//colu.vertices.push( punto );
+				antena1_1.vertices.push( ant );
+				antena1_1.vertices.push( ant2 );				
+            }
+			
+			//fan techo
+			fan = new TRIANGLE_FAN(techo);	
+			fan.draw(0x81786B);
+			
+			//fan cupula
+			//fancup = new TRIANGLE_FAN(cupula);	
+			//fancup.draw(colorPrin);
+			
+			//strip caja
+			strip = new TRIANGLE_STRIP(geometria2);
+			strip.draw(0x81786B);
+			
+			//strip techo
+			strip2 = new TRIANGLE_STRIP(techo2);
+			strip2.draw(0x81786B);
+			
+			//strip cupula
+			//strip3 = new TRIANGLE_STRIP(cupula2);
+			//strip3.draw(colorPrin);
+			
+			strip4 = new TRIANGLE_STRIP(antena1_1);
+			strip4.draw(0x81786B);
+			
+			
+			//CREAR LOS MATERIALES
+            var matLinea = new THREE.LineBasicMaterial( { color: 0xFFFFFF } );
+			
+			//CREAR LOS OBJETOS
+			var cono = new THREE.Line( geometria, matLinea );
+			//var tubo = new THREE.Line( geometria2, matLinea );
+		  	//AGREGAR A LA ESCENA
+		  	//scene.add( gridHelperXY );
+            scene.add( gridHelperXZ );
+		  	scene.add( arrowX );	
+		  	scene.add( arrowY );	
+		  	scene.add( arrowZ );	
+			scene.add( cono );
+			//scene.add( tubo );
+			
+			camera.position.x = 3;
+			camera.position.y = 4;	 
+		  	camera.position.z =  4;
+			
+		  	camera.lookAt( origin );
+			}
+			function columna(posx,posy){
+			var columna1 = new THREE.Geometry();
+			var columna1_1 = new THREE.Geometry();
+			
+			var radio2 = .2;
+			var res2 = 20.0;
+			
+			for( var i = 0; i <= res2; i++){
+			var colu = new THREE.Vector3();
+				var colu2 = new THREE.Vector3();
+				colu.x = radio2 * Math.cos( ( 2 * Math.PI * i )/ res2 )+posx;
+                colu.y = 4
+                colu.z =( radio2 * Math.sin( ( 2 * Math.PI * i )/ res2 )+posy);
+				colu2.x = colu.x;
+				colu2.y = 0;
+				colu2.z = colu.z;
+				//colu.vertices.push( punto );
+				columna1_1.vertices.push( colu );
+				columna1_1.vertices.push( colu2 );				
+            }
+			strip2 = new TRIANGLE_STRIP(columna1_1);
+			strip2.draw(0x81786B);
+		}
+		
+	
+    
+    function animate() {
+        render();
+		controls.update(); // required if controls.enableDamping = true, or if controls.autoRotate = true
+        requestAnimationFrame( animate );
+    }
+    
+    function render(){
+        renderer.render( scene, camera );
+    }
+    </script>
+  </body>
+</html>
