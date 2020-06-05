@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+				<style>
+		</style>
+	</head>
+	<body>
+
+		<div id="my-div">
+		
+		</div>
+
+		<script src="js/three.js"></script>
+		<script src="js/controls/OrbitControls.js"></script>
+		<script src="js/csg.js"></script>
+		<script src="js/THREE.CSG.js"></script>
+    	<script>
+
+            var camera, scene, rederer, controls, color;
+			var startTime = Date.now();
+			var gridHelper, modelo;
+			var light1, light2, light3, light14, light5, light6, light7, light8, light9;
+			init();
+			animate();
+
+			function init() {
+
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set( 200, 100, 50 );
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x000000 );
+				
+
+				controls = new THREE.OrbitControls( camera, render.domElement );
+				
+				//luces
+
+				for (var i=55; i>=10; i-=20){
+				luz(light1, i, 15, 11);
+				luz(light2, i, 15, -10.5);				
+				}
+				for (var i=-24; i>=-80; i-=20){
+				luz(light1, i, 15, 11);
+				luz(light2, i, 15, -10.5);				
+				}
+				luz(light9, -74, 15, 0 );
+				
+				luz2(light5, 35, 15, -20.4);
+				luz2(light6, -55, 13, -20.4);
+				luz2(light7, 20, 16, 20.4);
+				luz2(light8, -40, 15, 20.4);
+				
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer = new THREE.WebGLRenderer();
+				
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			
+		//declarar geomrias	
+		
+		var geometryvia = new THREE.BoxBufferGeometry(140, 1, 20 );
+		var geometryvia2 = new THREE.BoxBufferGeometry(70, 1, 60 );
+		var geometryanden = new THREE.BoxBufferGeometry( 60, 2, 10 );
+		var geometryedificio = new THREE.BoxBufferGeometry(35, 23, 15 );
+		var geometryedificio2 = new THREE.BoxBufferGeometry(16, 17, 15 );
+		var geometryagua = new THREE.CylinderGeometry( 1, 1, 5, 32 );
+		var geometriacarro = new THREE.BoxBufferGeometry(18, 6, 7 );
+		var geometrypersona = new THREE.CylinderGeometry( 1.2, 1.2, 7, 32 );
+		
+		//materiales
+		
+		var material = new THREE.MeshStandardMaterial( {color: 0xffffff} );
+		var material2 = new THREE.MeshStandardMaterial( {color: 0x420400} );
+		var material3 = new THREE.MeshStandardMaterial( {color: 0xFF840A} );
+		var material5 = new THREE.MeshStandardMaterial( {color: 0xFA3000} );
+		var material6 = new THREE.MeshStandardMaterial( {color: 0x2443B1});
+		var material7 = new THREE.MeshToonMaterial( {color: 0x2443B1});
+
+		
+		//Texturas
+		var blocksBase = new THREE.TextureLoader().load( 'textures/ColorMap.jpg' );
+		var blocksNormal = new THREE.TextureLoader().load( 'textures/NormalMap.jpg' );
+		
+		var blockbase2 = new THREE.TextureLoader().load( 'textures/textura2.png' );
+		var blockNormal2 = new THREE.TextureLoader().load( 'textures/normal2.png' );
+		
+		var blockbase3 = new THREE.TextureLoader().load( 'textures/textura3.png' );
+		var blockNormal3 = new THREE.TextureLoader().load( 'textures/normal3.png' );
+		
+		var blockbase4 = new THREE.TextureLoader().load( 'textures/textura4.png' );
+		var blockNormal4 = new THREE.TextureLoader().load( 'textures/normal4.png' );
+		
+		var blockbase5 = new THREE.TextureLoader().load( 'textures/textura5.png' );
+		var blockNormal5 = new THREE.TextureLoader().load( 'textures/normal5.png' );
+		
+		var blockbase6 = new THREE.TextureLoader().load( 'textures/textura6.png' );
+		var blockNormal6 = new THREE.TextureLoader().load( 'textures/normal6.png' );
+		
+		var blockbase7 = new THREE.TextureLoader().load( 'textures/textura7.png' );
+		var blockNormal7 = new THREE.TextureLoader().load( 'textures/normal7.png' );
+		
+		var blockbase8 = new THREE.TextureLoader().load( 'textures/textura8.png' );
+		var blockNormal8 = new THREE.TextureLoader().load( 'textures/normal8.png' );
+		
+		var blockbase9 = new THREE.TextureLoader().load( 'textures/textura9.png' );
+		var blockNormal9 = new THREE.TextureLoader().load( 'textures/normal9.png' );
+		
+		var blockbase10 = new THREE.TextureLoader().load( 'textures/textura10.png' );
+		var blockNormal10 = new THREE.TextureLoader().load( 'textures/normal10.png' );
+		
+		var blockbase11 = new THREE.TextureLoader().load( 'textures/textura11.png' );
+		var blockNormal11 = new THREE.TextureLoader().load( 'textures/normal11.png' );
+		//STANDARD MATERIAL
+		
+		var brickMaterial = new THREE.MeshToonMaterial( { 
+        color: 0xffffff, 
+		map: blocksBase,
+		normalMap: blocksNormal
+		} );
+		
+		var brickMaterial2 = new THREE.MeshPhongMaterial( { 
+        color: 0xffffff, 
+		map: blockbase2,
+		normalMap: blockNormal2
+		} );
+		
+		var brickMaterial3 = new THREE.MeshPhongMaterial( { 
+        color: 0xffffff, 
+		map: blockbase3,
+		normalMap: blockNormal3
+		} );
+		
+		var brickMaterial4 = new THREE.MeshPhongMaterial( { 
+        color: 0xFF840A, 
+		map: blockbase4,
+		normalMap: blockNormal4
+		} );
+		
+		var brickMaterial5 = new THREE.MeshPhongMaterial( { 
+        color: 0xffffff, 
+		map: blockbase5,
+		normalMap: blockNormal5
+		} );
+		
+		var brickMaterial6 = new THREE.MeshPhongMaterial( { 
+        color: 0xFF840A, 
+		map: blockbase6,
+		normalMap: blockNormal6
+		} );
+		
+		var brickMaterial7 = new THREE.MeshPhongMaterial( { 
+        color: 0xffffff, 
+		map: blockbase7,
+		normalMap: blockNormal7
+		} );
+		
+		var brickMaterial8 = new THREE.MeshStandardMaterial( { 
+        color: 0xffffff, 
+		map: blockbase8,
+		normalMap: blockNormal8
+		} );
+		
+		var brickMaterial9 = new THREE.MeshStandardMaterial( { 
+        color: 0xffffff, 
+		map: blockbase9,
+		normalMap: blockNormal9
+		} );
+		
+		var brickMaterial10 = new THREE.MeshStandardMaterial( { 
+        color: 0xffffff, 
+		map: blockbase10,
+		normalMap: blockNormal10
+		} );
+		
+		var brickMaterial11 = new THREE.MeshStandardMaterial( { 
+        color: 0xffffff, 
+		map: blockbase11,
+		normalMap: blockNormal11
+		} );
+		
+		var edificio = new THREE.Mesh( geometryedificio, brickMaterial );
+		var edificio2 = new THREE.Mesh( geometryedificio, brickMaterial7 );
+		var edificio3 = new THREE.Mesh( geometryedificio2, brickMaterial3 );
+		var edificio4 = new THREE.Mesh( geometryedificio, brickMaterial4 );
+		var edificio5 = new THREE.Mesh( geometryedificio2, brickMaterial5 );
+		var edificio6 = new THREE.Mesh( geometryedificio, brickMaterial2 );
+		var edificio7 = new THREE.Mesh( geometryedificio2, brickMaterial2 );
+		var edificio8 = new THREE.Mesh( geometryedificio2, brickMaterial );
+		var edificio9 = new THREE.Mesh( geometryedificio2, brickMaterial );
+		var edificio10 = new THREE.Mesh( geometryedificio2, brickMaterial);
+		var edificio11 = new THREE.Mesh( geometryedificio, brickMaterial );
+		var anden1 = new THREE.Mesh(geometryanden, brickMaterial8);
+		var anden2 = new THREE.Mesh(geometryanden, brickMaterial8);
+		var anden3 = new THREE.Mesh(geometryanden, brickMaterial8);
+		var anden4 = new THREE.Mesh(geometryanden, brickMaterial8)
+		var anden5 = new THREE.Mesh(geometryanden, brickMaterial8)
+		var via = new THREE.Mesh( geometryvia, brickMaterial10 );
+		var via2 = new THREE.Mesh( geometryvia, brickMaterial10 );
+		var carro = new THREE.Mesh(geometriacarro, brickMaterial5)
+		var persona = new THREE.Mesh(geometrypersona,  brickMaterial10);
+		
+		//crear geometrias
+		//var via = new THREE.Mesh( geometryvia, material );
+		//var anden1 = new THREE.Mesh(geometryanden, material);
+		//var anden2 = new THREE.Mesh(geometryanden, material);
+		//var via2 = new THREE.Mesh( geometryvia2, material );
+		//var anden3 = new THREE.Mesh(geometryanden, material);
+		//var anden4 = new THREE.Mesh(geometryanden, material)
+		//var anden5 = new THREE.Mesh(geometryanden, material)
+		//var edificio = new THREE.Mesh(geometryedificio, material2)
+		//var edificio2 = new THREE.Mesh(geometryedificio, material3)
+		//var edificio3 = new THREE.Mesh(geometryedificio2, material)
+		//var edificio4 = new THREE.Mesh(geometryedificio, material)
+		//var edificio5 = new THREE.Mesh(geometryedificio2, material3)
+		//var edificio6 = new THREE.Mesh(geometryedificio, material2)
+		//var edificio7 = new THREE.Mesh(geometryedificio2, material2)
+		//var edificio8 = new THREE.Mesh(geometryedificio2, material3)
+		//var edificio9 = new THREE.Mesh(geometryedificio2, material2)
+		//var edificio10 = new THREE.Mesh(geometryedificio2, material3)
+		//var edificio11 = new THREE.Mesh(geometryedificio, material)
+		var volardos = new THREE.Mesh(geometryagua, material5)
+		var volardos2 = new THREE.Mesh(geometryagua, material5)
+		//var carro = new THREE.Mesh(geometriacarro, material7)
+		
+		
+		via.translateX(-10);
+		
+		via2.rotation.y = 90 * Math.PI / 180
+		via2.translateZ(-10);
+		
+		anden3.translateZ(-15);
+		anden3.translateY(0.5);
+		anden3.translateX(-50);
+		
+		anden4.translateZ(15);
+		anden4.translateY(0.5);
+		anden4.translateX(-50);
+		
+		anden5.rotation.y = 90 * Math.PI / 180
+		
+		anden5.translateZ(-77);
+		anden5.translateY(0.5);
+		anden5.translateX(1);		
+		
+		anden1.translateZ(-15);
+		anden1.translateY(0.5);
+		anden1.translateX(30);
+		
+		anden2.translateZ(15);
+		anden2.translateY(0.5);
+		anden2.translateX(30);
+		
+		edificio.translateZ(-27);
+		edificio.translateY(13);
+		edificio.translateX(43)
+		
+		edificio3.translateZ(-26);
+		edificio3.translateY(10);
+		edificio3.translateX(17)
+		
+		edificio2.translateZ(27);
+		edificio2.translateY(10);
+		edificio2.translateX(-47)
+		
+		edificio4.translateZ(-27);
+		edificio4.translateY(10);
+		edificio4.translateX(-47)
+		
+		volardos.translateZ(-12);
+		volardos.translateY(3);
+		volardos.translateX(-30);
+		
+		volardos2.translateZ(12);
+		volardos2.translateY(3);
+		volardos2.translateX(30);
+		
+		edificio5.translateZ(27);
+		edificio5.translateY(10);
+		edificio5.translateX(53);
+		
+		edificio6.translateZ(27);
+		edificio6.translateY(10);
+		edificio6.translateX(28);
+
+		edificio7.translateZ(27);
+		edificio7.translateY(10);
+		edificio7.translateX(-72);
+		
+		edificio8.translateZ(-27);
+		edificio8.translateY(10);
+		edificio8.translateX(-72)
+		
+		edificio9.translateZ(15);
+		edificio9.translateY(10);
+		edificio9.translateX(-87);
+		
+		edificio10.translateZ(-15);
+		edificio10.translateY(10);
+		edificio10.translateX(-87)
+		
+		edificio11.translateZ(0);
+		edificio11.translateY(10);
+		edificio11.translateX(-97)
+		
+		carro.translateZ(-3);
+		carro.translateY(5);
+		carro.translateX(-40)
+		
+		persona.translateZ(7);
+		persona.translateY(3);
+		persona.translateX(-60)
+		
+	scene.add(via, persona, anden1, anden2, via2, anden3, anden4, anden5, edificio, edificio2, edificio3, edificio4, volardos, volardos2, edificio5, edificio6, edificio7, edificio8, edificio10, edificio9, edificio11, carro);	
+}
+function luz(luz, x, y, z){
+//luces
+				var geometrypost = new THREE.BoxBufferGeometry( 1, .5, 2);
+				var sphere = new THREE.SphereBufferGeometry( .5, 16, 8 );
+				var geometrypostes = new THREE.CylinderGeometry( .4, .4, 15, 32 );
+				
+				var material = new THREE.MeshStandardMaterial( {color: 0xffffff} );
+				
+				var poste = new THREE.Mesh( geometrypostes, material );
+				var post = new THREE.Mesh( geometrypost, material );
+				var n=.4; 
+				if(z>0){
+				n=-.4
+				}
+				post.translateZ(z-n);
+				post.translateX(x);
+				post.translateY(15.5);
+				
+				var c=1;
+				
+				if(z>0){
+				c=-1
+				}
+					poste.translateZ(z-c);
+					poste.translateX(x);
+					poste.translateY(8);
+					
+				luz = new THREE.PointLight( 0xF79B00, 0.7, 32 );
+				luz.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xF79B00} ) ) );
+				
+				luz.position.x = x;
+				luz.position.z = z;
+				luz.position.y = y;
+				
+				scene.add( luz, poste, post );
+}
+
+function luz2(luz, x, y, z){
+
+				var geometry = new THREE.BoxBufferGeometry( 10, 8, 2 );
+				
+				luz = new THREE.PointLight( 0xF79B00, 1, 15 );
+				luz.add( new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0xF79B00 } ) ) );
+				
+				luz.position.x = x;
+				luz.position.z = z;
+				luz.position.y = y;
+				
+				scene.add( luz);
+}
+
+		function animate() {
+        render();
+		controls.update();
+        requestAnimationFrame( animate );
+    	}
+    
+	
+    	function render(){
+
+    	//camera.position.x = 8*Math.cos(dtime/10000);
+        //camera.position.z = 8*Math.sin(dtime/10000);
+        renderer.render( scene, camera );
+		camera.lookAt( 0, 0, 0 );
+		
+				
+	    }
+
+		</script>
+	</body>
+</html>
