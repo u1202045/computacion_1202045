@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PERSONAJE
+		BRAYAN SEBASTIAN BECERRA BELTRAN
+		OMAR FERNANDO GONZALES RAMIREZ
+	</title>
+   <!DOCTYPE html>
+<html>
+  <head>
+    <title>PERSONAJE</title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <script src="js/three.js"></script>
+	<script src="js/controls/OrbitControls.js"></script>
+	<script src="js/csg.js"></script>
+	<script src="js/THREE.CSG.js"></script>
+    <script>
+		var scene, aspect, camera, renderer, controls;
+		    //COLORES PERSONAJE
+		var coln = new THREE.Color( 0xE8E4E0 );
+        var colc = new THREE.Color( 0x423526);
+        var colh = new THREE.Color( 0x754211 );
+		var colbo = new THREE.Color(0xC4AD7E);
+		var colne = new THREE.Color(0x000000);
+		var colbl = new THREE.Color(0xFFFFFF);
+
+		var startTime = Date.now();
+		
+		class TRIANGLE_FAN{	
+		  constructor( Geometria ){
+		    this.geometria = Geometria;
+			console.log(this.geometria);
+		  }  
+		  draw(color){			
+			for( var i=2; i<this.geometria.vertices.length; i++ ){
+			  this.geometria.faces.push( new THREE.Face3(0,i-1,i) );
+			}
+			this.geometria.computeFaceNormals();
+            var materialFanFront = new THREE.MeshStandardMaterial( { color: color, side: THREE.FrontSide, metalness: 0.5, roughness: 0.1 } );
+            var materialFanBack = new THREE.MeshStandardMaterial( { color: color, side: THREE.BackSide, metalness: 0.5, roughness: 0.1 } );
+			var fan = new THREE.Mesh( this.geometria, materialFanFront );
+            var fan_2 = new THREE.Mesh( this.geometria, materialFanBack );
+			scene.add( fan );
+            scene.add( fan_2 );
+		  }
+		}
+		
+		class TRIANGLE_STRIP{	
+		  constructor( Geometria ){
+		    this.geometria = Geometria;
+			console.log(this.geometria);
+		  }  
+		  draw(color){			
+			for( var i=2; i<this.geometria.vertices.length; i++ ){
+			  this.geometria.faces.push( new THREE.Face3(i-2,i-1,i) );
+			}
+			this.geometria.computeFaceNormals();
+            var materialStripFront = new THREE.MeshStandardMaterial( { color: color, side: THREE.FrontSide, metalness: 0.5, roughness: 0.1 } );
+            var materialStripBack = new THREE.MeshStandardMaterial( { color: color, side: THREE.BackSide, metalness: 0.5, roughness: 0.1 } );
+			var strip = new THREE.Mesh( this.geometria, materialStripFront );
+			var strip_2 = new THREE.Mesh( this.geometria, materialStripBack );
+			scene.add( strip );
+            scene.add( strip_2 );
+		  }
+		}
+		
+		init();
+		animate();
+	
+		function init(){
+			scene = new THREE.Scene();
+            scene.background = new THREE.Color( 0xFFFFFF );
+			aspect = window.innerWidth / window.innerHeight;
+			camera = new THREE.PerspectiveCamera( 45, aspect, 0.1, 1000);
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			controls = new THREE.OrbitControls( camera, renderer.domElement );
+            				
+			var size = 10;
+			var arrowSize = 10;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+			var color1 = new THREE.Color( 0xFFFFFF );
+		  	var color2 = new THREE.Color( 0x333333 );
+		  	var colorR = new THREE.Color( 0xAA3333 );
+		  	var colorG = new THREE.Color( 0x33AA33 );
+		  	var colorB = new THREE.Color( 0x333366 );
+		  
+		  	//CREAR LAS GRILLAS PARA EL ESCENARIO
+		  	var axesHelper = new THREE.AxesHelper( size );
+		  	var gridHelperXY = new THREE.GridHelper( size, divisions, color1, color1);
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2 );
+		  	var gridHelperYZ = new THREE.GridHelper( size, divisions, color2, color2 );
+            
+            //ROTARLAS PARA QUE QUEDEN EN EL ESPACIO ADECUADO
+            gridHelperXY.rotateOnWorldAxis ( x, THREE.Math.degToRad(90) );
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );
+            gridHelperYZ.rotateOnWorldAxis ( z, THREE.Math.degToRad(90) );
+            
+            //CREAR LAS FLECHAS QUE INDICAN LOS EJES DE COORDENADAS 3D
+            var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+            var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );
+            var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+			//CREAR ILUMINACIÓN
+            var ambient = new THREE.AmbientLight( 0xffffff, 2 );
+            scene.add( ambient );
+            
+            var pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
+            pointLight.position.set( 5, 5, 0 );
+
+            var pointLight2 = new THREE.PointLight( 0xffffff, 1, 100 );
+            pointLight2.position.set( 0, 0, 5 );
+            scene.add( pointLight );
+            scene.add( pointLight2 );
+            
+            //VARIABLES
+
+            var radio = 3;  
+			var radio2 = 1.5;  
+			var res = 10.0; // cantidad de caras
+
+			//CREAR LAS GEOMETRÍAS
+            //CARA
+			var pi = new THREE.Vector3(0, 2.5, 0);	//FAN	punto incio arriba
+			var pf = new THREE.Vector3(1, -3.5, 1);	
+			
+			var pi2 = new THREE.Vector3(2.15, -.5, 2.15);
+			var pf2 = new THREE.Vector3(2.15, -3.25, 2.15);	//FAN	punto final abajo
+
+			var geo0 = new THREE.Geometry();
+            var geo1 = new THREE.Geometry();
+			var geo2 = new THREE.Geometry();
+            var geo2_1 = new THREE.Geometry();
+            var geo3 = new THREE.Geometry();
+			var geo4 = new THREE.Geometry();
+            var geo5 = new THREE.Geometry();
+
+			var geo6_1 = new THREE.Geometry();
+			var geo6 = new THREE.Geometry();
+			var geo6_2 = new THREE.Geometry();
+
+            geo0.vertices.push( pi );
+			geo5.vertices.push( pf );
+
+			geo6_1.vertices.push( pi2 );
+			geo6_2.vertices.push( pf2 );
+            
+            //FORMA CARA
+           for( var i = 0; i <= res; i++){
+
+                var p = new THREE.Vector3();
+				var p2 = new THREE.Vector3();
+                var p2_1 = new THREE.Vector3();
+                var p3 = new THREE.Vector3();
+                var p4 = new THREE.Vector3();
+				var p5 = new THREE.Vector3();
+
+				p.x = radio * Math.cos( ( 2 * Math.PI * i )/ res ) ;
+                p.y = 0
+                p.z = radio * Math.sin( ( 2 * Math.PI * i )/ res );
+
+				p2.x = (p.x * .9); p2.y = 1.25; p2.z = (p.z * .9);
+                p2_1.x = (p2.x * .5) ; p2_1.y = 2.25; p2_1.z = (p2.z * .5) ;
+
+				p3.x = (p.x * 1.05) ; p3.y = -1.5; p3.z = (p.z * 1.05) ;
+				p4.x = (p3.x); p4.y = -2; p4.z = (p3.z ) ;
+				p5.x = (p4.x * .75) + .5; p5.y = -3.25; p5.z = (p4.z * .75) + .5;
+
+				geo1.vertices.push( p );
+				geo1.vertices.push( p2 );	
+
+				geo2.vertices.push( p );
+				geo2.vertices.push( p3 );	
+
+				geo2_1.vertices.push( p2 );
+				geo2_1.vertices.push( p2_1 );	
+                geo0.vertices.push( p2_1 );
+
+				geo3.vertices.push( p3 );
+				geo3.vertices.push( p4 );
+
+				geo4.vertices.push( p4 );
+				geo4.vertices.push( p5 );
+                geo5.vertices.push( p5 );
+
+				var p6 = new THREE.Vector3();
+				var p7 = new THREE.Vector3();
+				
+				p6.x = radio * .6 * Math.cos( ( 2 * Math.PI * i )/ res-2 ) + 1.5;
+                p6.y = -1;
+                p6.z = radio * .6 * Math.sin( ( 2 * Math.PI * i )/ res-2 ) + 1.5;
+
+				p7.x = (p6.x); p7.y = -3; p7.z = (p6.z);
+
+				geo6_1.vertices.push( p6 );
+				geo6.vertices.push( p6 );
+                geo6.vertices.push( p7 );
+				geo6_2.vertices.push( p7 );
+
+            }
+
+			//CUERPO
+			var ci = new THREE.Vector3(1, -2, 1);
+			var cf = new THREE.Vector3(0, -10, 0);	
+			var ci_2 = new THREE.Vector3(2, -5.5, 2);
+			var cf_2 = new THREE.Vector3(2.8, -10, 2.8);
+			
+			var ceo0 = new THREE.Geometry();
+			var ceo1 = new THREE.Geometry();
+			var ceo2 = new THREE.Geometry();
+			var ceo3 = new THREE.Geometry();
+			var ceo4 = new THREE.Geometry();
+			ceo0.vertices.push( ci );
+			ceo4.vertices.push(cf);
+			var ceo5 = new THREE.Geometry();
+			var ceo6 = new THREE.Geometry();
+			var ceo7 = new THREE.Geometry();
+			ceo5.vertices.push( ci_2 );
+			ceo7.vertices.push(cf_2);
+
+ 			for( var i = 0; i <= res; i++){
+
+                var c = new THREE.Vector3();
+				var c2 = new THREE.Vector3();
+				var c3 = new THREE.Vector3();
+				var c4 = new THREE.Vector3();
+				var c5 = new THREE.Vector3();
+				var c6 = new THREE.Vector3();
+				
+				c.x = radio * .7 * Math.cos( ( 2 * Math.PI * i )/ res );
+                c.y = -3.5
+                c.z = radio * .7 * Math.sin( ( 2 * Math.PI * i )/ res );
+
+				c2.x = (c.x * 1.3); c2.y =-5; c2.z = (c.z * 1.3);
+				c3.x = (c2.x*1.5); c3.y=-10; c3.z = c3.z = c2.z*1.5;
+				c4.x = (c3.x*0.5); c4.y = -12; c4.z = (c3.z*0.5); 
+
+				ceo0.vertices.push( c );
+
+				ceo1.vertices.push( c );
+				ceo1.vertices.push( c2 );
+
+				ceo2.vertices.push(c2);
+				ceo2.vertices.push(c3);
+				
+				ceo3.vertices.push(c3);
+				ceo3.vertices.push(c4);
+				ceo4.vertices.push(c4);
+				
+				c5.x = radio * .75 * Math.cos( ( 2 * Math.PI * i )/ res ) + 1;
+                c5.y = -6.5;
+                c5.z = radio * .75 * Math.sin( ( 2 * Math.PI * i )/ res ) + 1;
+				
+				c6.x = (c5.x * 1.2) + .25; c6.y =-8.5; c6.z = (c5.z * 1.2) + .25;
+				
+				ceo5.vertices.push(c5);
+				ceo6.vertices.push(c5);
+				ceo6.vertices.push(c6);
+				ceo7.vertices.push(c6);
+            }
+
+            //FAN
+            //CARA
+			up = new TRIANGLE_FAN(geo0);	
+			dwn = new TRIANGLE_FAN(geo5);	
+
+			t1 = new TRIANGLE_FAN(geo6_1);
+			t2 = new TRIANGLE_FAN(geo6_2);
+			up.draw(colc); dwn.draw(colc); 
+			t1.draw(colbo); t2.draw(colbo); 
+
+			//CUERPO
+			cu1 = new TRIANGLE_FAN(ceo0);
+			cul2 = new TRIANGLE_FAN(ceo4);
+			cul3 = new TRIANGLE_FAN(ceo5);
+			cul4 = new TRIANGLE_FAN(ceo7);
+			cu1.draw(colc); cul2.draw(colc);
+			cul3.draw(colbo); cul4.draw(colbo);
+
+			//STRIP
+            //CARA
+			var g1 = new TRIANGLE_STRIP(geo1); //frente-ojos
+            var g2 = new TRIANGLE_STRIP(geo2); //mitad-nariz
+            var g2_1 = new TRIANGLE_STRIP(geo2_1); //mitad-nariz
+			var g3 = new TRIANGLE_STRIP(geo3); //mandi up
+			var g4 = new TRIANGLE_STRIP(geo4);
+			var g6 = new TRIANGLE_STRIP(geo6); //mandi down
+
+			g1.draw(colc); g2.draw(colc); g2_1.draw(colc); g3.draw(colc); g4.draw(colc);
+			g6.draw(colbo);
+
+			//CUERPO
+			var cue1 = new TRIANGLE_STRIP(ceo1);
+			var cue2 = new TRIANGLE_STRIP(ceo2);
+			var cue3 = new TRIANGLE_STRIP(ceo3);
+			var cue4 = new TRIANGLE_STRIP(ceo6);
+			
+			cue1.draw(colc);  cue2.draw(colc); cue3.draw(colc); cue4.draw(colbo);
+
+			// EXTREMIDADES
+
+				var closedSpline = new THREE.CatmullRomCurve3( [ //BRAZO DERECHO
+					new THREE.Vector3(  -1,  -4, 1 ),
+					new THREE.Vector3( -3, -4.5, 3 ),
+					new THREE.Vector3( 0, 0, 10 ),
+				] );
+
+				closedSpline.curveType = 'catmullrom';
+				closedSpline.closed = false;
+				
+				var extrudeSettings = {
+					steps: 100,
+					amount: 1,
+					bevelEnabled: false,
+					bevelThickness: 1,
+					extrudePath: closedSpline
+				};
+
+				var closedSpline2 = new THREE.CatmullRomCurve3( [ //BRAZO IZQUIERDO
+					new THREE.Vector3(  1,  -4, -1 ),
+					new THREE.Vector3( 3, -4.5, -3 ),
+					new THREE.Vector3( 0, -8, -10 ),
+				] );
+
+				closedSpline2.curveType = 'catmullrom';
+				closedSpline2.closed = false;
+
+				var extrudeSettings2 = {
+					steps: 100,
+					amount: 1,
+					bevelEnabled: false,
+					bevelThickness: 1,
+					extrudePath: closedSpline2
+				};
+
+				var closedSpline3 = new THREE.CatmullRomCurve3( [ //PIERNA DERECHA
+					new THREE.Vector3( 2.5,  -10, -1 ),
+					new THREE.Vector3( 2, -15, -2 ),
+					new THREE.Vector3( -4, -17, -8 ),
+				] );
+
+				closedSpline3.curveType = 'catmullrom';
+				closedSpline3.closed = false;
+
+				var extrudeSettings3 = {
+					steps: 100,
+					amount: 1,
+					bevelEnabled: false,
+					bevelThickness: 1,
+					extrudePath: closedSpline3
+				};
+
+				var closedSpline4 = new THREE.CatmullRomCurve3( [ //PIERNA IZQUIERDA
+					new THREE.Vector3( -2.5,  -9.75, 1 ),
+					new THREE.Vector3( 2, -13, 6 ),
+					new THREE.Vector3( 2.5, -19.5, 5),
+				] );
+
+				closedSpline4.curveType = 'catmullrom';
+				closedSpline4.closed = false;
+
+				var extrudeSettings4 = {
+					steps: 100,
+					amount: 1,
+					bevelEnabled: false,
+					bevelThickness: 1,
+					extrudePath: closedSpline4
+				};
+
+				var closedSpline5 = new THREE.CatmullRomCurve3( [ //COLA
+					new THREE.Vector3( -2.5, -9.75, -2.5 ),
+					new THREE.Vector3( -4, -10, -4 ),
+					new THREE.Vector3( -5, -9.25, -5),
+					new THREE.Vector3( -5.5, -8, -5.5),
+					new THREE.Vector3( -5.25, -6, -5.25),
+					new THREE.Vector3( -4, -4, -4),
+					new THREE.Vector3( -3.75, -2, -3.75),
+					new THREE.Vector3( -4, -1, -4),
+					new THREE.Vector3( -4.5, -.25, -4.5),
+					new THREE.Vector3( -5, 0, -5),
+					new THREE.Vector3( -6, -.25, -6),
+					new THREE.Vector3( -6.5, -1.25, -6.5),
+					new THREE.Vector3( -6.75, -2, -6.75),
+				] );
+
+				closedSpline5.curveType = 'catmullrom';
+				closedSpline5.closed = false;
+
+				var extrudeSettings5 = {
+					steps: 100,
+					amount: 1,
+					bevelEnabled: false,
+					bevelThickness: 1,
+					extrudePath: closedSpline5
+				};
+
+			var pts = [], numPts = 5;
+
+				for ( var i = 0; i < numPts * 2; i ++ ) {
+					var l = i % 2 == 1 ? 1 : 1;
+					var a = i / numPts * Math.PI;
+					pts.push( new THREE.Vector2( Math.cos( a ) * l, Math.sin( a ) * l ) );
+				}
+
+				var pts_col = [], numPts = 5;
+
+				for ( var i = 0; i < numPts * 4; i ++ ) {
+					var l = i % 2 == 1 ? .5 : .5;
+					var a = i / numPts * Math.PI;
+					pts_col.push( new THREE.Vector2( Math.cos( a ) * l, Math.sin( a ) * l ) );
+				}
+
+				var shape = new THREE.Shape( pts );
+				var shape_col = new THREE.Shape( pts_col );
+				var geometry_md = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings );
+				var geometry_mi = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings2 );
+				var geometry_pd = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings3 );
+				var geometry_pi = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings4 );
+				var geometry_col = new THREE.ExtrudeBufferGeometry( shape_col, extrudeSettings5 );
+
+				var material = new THREE.MeshStandardMaterial( { color: colbo, metalness: 0.5, roughness: 0.1 } );
+				var material2 = new THREE.MeshStandardMaterial( { color: colc, metalness: 0.5, roughness: 0.1 } );
+				var materials = [ material, material2 ];
+				var mesh_md = new THREE.Mesh( geometry_md, materials);
+				var mesh_mi = new THREE.Mesh( geometry_mi, materials);
+				var mesh_pd = new THREE.Mesh( geometry_pd, materials);
+				var mesh_pi = new THREE.Mesh( geometry_pi, materials);
+				var mesh_col = new THREE.Mesh( geometry_col, material2);
+
+				scene.add( mesh_md, mesh_mi, mesh_pd, mesh_pi, mesh_col);
+
+			//DETALLES OJOS, NARIZ, OREJAS, ETC
+			//mano
+			manos(0,.5,10.8, 80, 170, 70);
+			manos(0,-8,-11, 90, 20, -80);
+			
+			//pies 
+			
+			pies(-4,-17.8,-8, 0, -30, -70);
+			pies(3, -19.5,5.7, 0, -50, 0);
+			// OJOS
+
+			ojos(1, 2.25, 1.5, 2.75);
+			ojos(2.25, 1, 2.75, 1.5);
+
+			//OREJAS
+			orejas(2, -2.75, -.5);
+			orejas(-2.75, 2, -.5);
+			
+			// NARIZ
+			var boxGeometry = new THREE.BoxGeometry( .8, .4, .8 );
+			var box2Geometry = new THREE.BoxGeometry( 1, .6, 1 );
+			var sphereGeometry = new THREE.SphereGeometry( .5, 32, 32 );
+			
+			var material_or = new THREE.MeshStandardMaterial( { color: colh, metalness: 0.5, roughness: 0.1 } );
+			
+			//CREAR LAS MALLAS nariz
+			var cube = new THREE.Mesh( boxGeometry );
+			var cube2 = new THREE.Mesh( box2Geometry );
+			var sphere = new THREE.Mesh( sphereGeometry );
+			
+			var pi = 3.1416;
+		
+			cube2.rotateOnAxis(y, pi/2);
+			cube2.rotateOnAxis(x, pi/2);
+			cube2.translateY(.3)
+			cube.rotateOnAxis(y, pi/4);
+			
+			var boxCSG = THREE.CSG.fromMesh( cube );
+			var box2CSG = THREE.CSG.fromMesh( cube2 );
+			var sphereCSG = THREE.CSG.fromMesh( sphere );
+	
+			var result2= boxCSG.intersect(sphereCSG  );
+			var result3 = result2.subtract(box2CSG);
+			
+			//CONVERTIR A MALLA DE THREE JS NUEVAMENTE
+			var C2T2 = THREE.CSG.toMesh( result2 );
+			var C2T3 = THREE.CSG.toMesh( result3 );
+
+			C2T3.material = material_or;
+			
+			C2T3.translateZ(2.55);
+			C2T3.translateX(2.55);
+			C2T3.translateY(-1);
+			C2T3.rotateOnAxis(y, 3/4*pi);
+
+			scene.add( C2T3 );
+
+			//OBLIGO
+
+			var geometry_omb = new THREE.SphereBufferGeometry( .25, 32, 32 );
+			var material_omb = new THREE.MeshBasicMaterial( {color: colne} );
+			var omb = new THREE.Mesh( geometry_omb, material_omb );
+
+			scene.add(omb);
+			
+			omb.translateX(3.4);
+			omb.translateY(-8.5);
+			omb.translateZ(3.4);
+
+		  	//POSICION DE LA CAMARA
+			//scene.add( gridHelperXZ );
+		  	//scene.add( arrowX );	
+		  	//scene.add( arrowY );	
+		  	//scene.add( arrowZ );
+
+			camera.position.x = 10;
+			camera.position.y = 0;	 
+		  	camera.position.z = 10;
+			camera.lookAt( origin );
+			  
+			}
+
+	function ojos(ox, oz, px, pz){
+
+		var geometry_esf = new THREE.SphereBufferGeometry( 1, 32, 32 );
+		var geometry_pup = new THREE.SphereBufferGeometry( .5, 32, 32 );
+
+		var material_ojo = new THREE.MeshBasicMaterial( {color: colbl} );
+		var material_pup = new THREE.MeshBasicMaterial( {color: colne} );
+			
+			var ojo = new THREE.Mesh( geometry_esf, material_ojo );
+			var pup = new THREE.Mesh( geometry_pup, material_pup );
+			scene.add( ojo, pup );
+
+			ojo.translateX(ox);
+			ojo.translateZ(oz);
+
+			pup.translateX(px);
+			pup.translateZ(pz);
+			
+    }
+	
+	function orejas(ox, oz, oy){ 
+			var geometry_cil = new THREE.CylinderBufferGeometry( 1.5, 1.5, .5, 32 );
+	        var geometry_esf = new THREE.SphereGeometry( 1, 32, 32 );
+                        
+			//CREAR LOS MATERIALES
+            var material1 = new THREE.MeshStandardMaterial( { color: colbo, metalness: 0.5, roughness: 0.1 } );
+			
+			//CREAR LAS MALLAS
+			
+			var cilindro = new THREE.Mesh( geometry_cil );
+            var esfera = new THREE.Mesh( geometry_esf );
+
+			esfera.translateY(.75);
+			
+	        var cil_CSG = THREE.CSG.fromMesh( cilindro );
+	        var esf_CSG = THREE.CSG.fromMesh( esfera );
+
+	        var resultado= cil_CSG.subtract( esf_CSG );	
+
+	        var CSG_ore = THREE.CSG.toMesh( resultado );
+
+			CSG_ore.material = material1; 
+
+			CSG_ore.translateX(ox);
+			CSG_ore.translateY(oy);
+			CSG_ore.translateZ(oz);
+            CSG_ore.rotation.x = 90 * Math.PI / 180
+            CSG_ore.rotation.z = -45 * Math.PI / 180
+
+			//AGREGAR A LA ESCENA LOS DIFERENTES ELEMENTOS
+
+			//scene.add( esfera );
+			//scene.add( cilindro );
+            scene.add( CSG_ore );
+	}
+	
+	function manos(ox, oy,oz, ax, ay, az){
+			var boxGeometry = new THREE.BoxGeometry( 4, 2, 2 );
+			var cilindro1Geometry = new THREE.CylinderGeometry( .75, .5, 3, 100 );
+			var cilindro2Geometry = new THREE.CylinderGeometry( .7, .4, 3, 100 );
+			var cilindro3Geometry = new THREE.CylinderGeometry( .7, .4, 3, 100 );
+			var cilindro4Geometry = new THREE.CylinderGeometry( .7, .4, 3, 100 );
+			var box5Geometry = new THREE.BoxGeometry( 4, 1.5, 3 );
+			var sphereGeometry = new THREE.SphereGeometry( 2, 32, 32 );
+			var sphere2Geometry = new THREE.SphereGeometry( .4, 32, 32 );
+			var sphere3Geometry = new THREE.SphereGeometry( .4, 32, 32 );
+			var sphere4Geometry = new THREE.SphereGeometry( .4, 32, 32 );
+			var sphere5Geometry = new THREE.SphereGeometry( .5, 32, 32 );
+			
+			var material1 = new THREE.MeshStandardMaterial( { color: colbo, metalness: 0.5, roughness: 0.1 } );
+			
+			var cubo5 = new THREE.Mesh( box5Geometry );
+			var cilindro1 = new THREE.Mesh( cilindro1Geometry );
+			var cilindro2 = new THREE.Mesh( cilindro2Geometry );
+			var cilindro3 = new THREE.Mesh( cilindro3Geometry );
+			var cilindro4 = new THREE.Mesh( cilindro4Geometry );
+			var sphere = new THREE.Mesh( sphereGeometry );
+			var sphere2 = new THREE.Mesh( sphere2Geometry );
+			var sphere3 = new THREE.Mesh( sphere3Geometry );
+			var sphere4 = new THREE.Mesh( sphere4Geometry );
+			var sphere5 = new THREE.Mesh( sphere5Geometry );
+			
+			var pi=3.1416;
+			
+			//dedo1
+			cilindro2.translateX(2.5);
+			cilindro2.translateZ(-1.65);
+			cilindro2.rotation.z = 90 * Math.PI / 180
+			cilindro2.rotation.y = 30 * Math.PI / 180
+			sphere2.translateX(3.7);
+			sphere2.translateZ(-2.35);
+			
+			//dedo2
+			cilindro3.translateX(2.5);
+			cilindro3.rotation.z = 90 * Math.PI / 180
+			sphere3.translateX(3.9);
+			
+			//dedo3
+			cilindro4.translateX(2.5);
+			cilindro4.translateZ(1.65);
+			cilindro4.rotation.z = 90 * Math.PI / 180
+			cilindro4.rotation.y = 330 * Math.PI / 180
+			sphere4.translateX(3.7);
+			sphere4.translateZ(2.35);
+			
+			//dedo4
+
+			cilindro1.translateZ(1.5);
+			cilindro1.rotation.z = 90 * Math.PI / 180
+			cilindro1.rotation.y = 292 * Math.PI / 180
+			sphere5.translateX(.5);
+			sphere5.translateZ(2.7);
+			
+			//CONVERTIR A CSG
+			var cilindro1CSG = THREE.CSG.fromMesh( cilindro1 );
+			var cilindro2CSG = THREE.CSG.fromMesh( cilindro2 );
+			var cilindro3CSG = THREE.CSG.fromMesh( cilindro3 );
+			var cilindro4CSG = THREE.CSG.fromMesh( cilindro4 );
+			var box5CSG = THREE.CSG.fromMesh( cubo5 );
+			var sphereCSG = THREE.CSG.fromMesh( sphere );
+			var sphere2CSG = THREE.CSG.fromMesh( sphere2 );	
+			var sphere3CSG = THREE.CSG.fromMesh( sphere3 );	
+			var sphere4CSG = THREE.CSG.fromMesh( sphere4 );	
+			var sphere5CSG = THREE.CSG.fromMesh( sphere5 );	
+			
+			//APLICAR LAS OPERACIONES
+			var result2= box5CSG.intersect(sphereCSG  );
+			var result3 = result2.union(cilindro2CSG);
+			var result4 = result3.union(sphere2CSG);
+			var result5 = result4.union(cilindro3CSG);
+			var result6 = result5.union(sphere3CSG);
+			var result7 = result6.union(cilindro4CSG);
+			var result8 = result7.union(sphere4CSG);
+			var result9 = cilindro1CSG.union(sphere5CSG);
+			var result10 = result8.union(result9);
+			
+			var C2T2 = THREE.CSG.toMesh( result10);
+			
+			
+			C2T2.material = material1; 
+			
+			var sx =.7;
+			var sy =.7;
+			var sz =.7;
+			var t = new THREE.Matrix4();
+			
+			t.set( 	sx, 0,  0, 0,
+					0, sy,0, 0, 
+					0, 0, sz, 0,
+					0,  0,  0, 1 );
+			   
+			C2T2.applyMatrix(t);
+			
+			C2T2.translateX(ox);
+			C2T2.translateY(oy);
+			C2T2.translateZ(oz);
+			C2T2.rotation.x = ax * Math.PI / 180
+			C2T2.rotation.y = ay * Math.PI / 180
+			C2T2.rotation.z = az * Math.PI / 180
+
+			scene.add( C2T2 );
+	}
+		
+	function pies(ox, oy,oz, ax, ay, az){
+			var boxGeometry = new THREE.BoxGeometry( 4, 2, 2 );
+			var cilindro1Geometry = new THREE.CylinderGeometry( .75, .5, 3, 100 );
+			var cilindro2Geometry = new THREE.CylinderGeometry( .5, .4, 3, 100 );
+			var cilindro3Geometry = new THREE.CylinderGeometry( .7, .4, 3, 100 );
+			var cilindro4Geometry = new THREE.CylinderGeometry( .5, .4, 3, 100 );
+			var box5Geometry = new THREE.BoxGeometry( 7, 1.5, 3 );
+			var sphereGeometry = new THREE.SphereGeometry( 3.2, 32, 32 );
+			var sphere2Geometry = new THREE.SphereGeometry( .4, 32, 32 );
+			var sphere3Geometry = new THREE.SphereGeometry( .4, 32, 32 );
+			var sphere4Geometry = new THREE.SphereGeometry( .4, 32, 32 );
+			var sphere5Geometry = new THREE.SphereGeometry( .5, 32, 32 );
+			
+			var material1 = new THREE.MeshStandardMaterial( { color: colbo, metalness: 0.5, roughness: 0.1 } );
+			
+			var cubo5 = new THREE.Mesh( box5Geometry );
+			var cilindro1 = new THREE.Mesh( cilindro1Geometry );
+			var cilindro2 = new THREE.Mesh( cilindro2Geometry );
+			var cilindro3 = new THREE.Mesh( cilindro3Geometry );
+			var cilindro4 = new THREE.Mesh( cilindro4Geometry );
+			var sphere = new THREE.Mesh( sphereGeometry );
+			var sphere2 = new THREE.Mesh( sphere2Geometry );
+			var sphere3 = new THREE.Mesh( sphere3Geometry );
+			var sphere4 = new THREE.Mesh( sphere4Geometry );
+			var sphere5 = new THREE.Mesh( sphere5Geometry );
+			
+			var pi=3.1416;
+			
+			//dedo1
+			cilindro2.translateX(2.5);
+			cilindro2.translateZ(-1);
+			cilindro2.rotation.z = 90 * Math.PI / 180
+			sphere2.translateZ(-1);
+			sphere2.translateX(3.9);
+			
+			//dedo2
+			cilindro3.translateX(2.5);
+			cilindro3.rotation.z = 90 * Math.PI / 180
+			sphere3.translateX(3.9);
+			
+			// dedo 3
+			cilindro4.translateX(2.5);
+			cilindro4.translateZ(1);
+			cilindro4.rotation.z = 90 * Math.PI / 180
+			sphere4.translateZ(1);
+			sphere4.translateX(3.9);
+			
+			
+			//CONVERTIR A CSG
+			var cilindro1CSG = THREE.CSG.fromMesh( cilindro1 );
+			var cilindro2CSG = THREE.CSG.fromMesh( cilindro2 );
+			var cilindro3CSG = THREE.CSG.fromMesh( cilindro3 );
+			var cilindro4CSG = THREE.CSG.fromMesh( cilindro4 );
+			var box5CSG = THREE.CSG.fromMesh( cubo5 );
+			var sphereCSG = THREE.CSG.fromMesh( sphere );
+			var sphere2CSG = THREE.CSG.fromMesh( sphere2 );	
+			var sphere3CSG = THREE.CSG.fromMesh( sphere3 );	
+			var sphere4CSG = THREE.CSG.fromMesh( sphere4 );	
+			var sphere5CSG = THREE.CSG.fromMesh( sphere5 );	
+			
+			//APLICAR LAS OPERACIONES
+			var result2= box5CSG.intersect(sphereCSG  );
+			var result3 = result2.union(cilindro2CSG);
+			var result4 = result3.union(sphere2CSG);
+			var result5 = result4.union(cilindro3CSG);
+			var result6 = result5.union(sphere3CSG);
+			var result7 = result6.union(cilindro4CSG);
+			var result8 = result7.union(sphere4CSG);
+
+			
+			var C2T2 = THREE.CSG.toMesh( result8);
+			
+			
+			C2T2.material = material1; 
+			
+			var sx =.7;
+			var sy =.7;
+			var sz =.7;
+			var t = new THREE.Matrix4();
+			
+			t.set( 	sx, 0,  0, 0,
+					0, sy,0, 0, 
+					0, 0, sz, 0,
+					0,  0,  0, 1 );
+			   
+			C2T2.applyMatrix(t);
+			
+			C2T2.translateX(ox);
+			C2T2.translateY(oy);
+			C2T2.translateZ(oz);
+			C2T2.rotation.x = ax * Math.PI / 180
+			C2T2.rotation.y = ay * Math.PI / 180
+			C2T2.rotation.z = az * Math.PI / 180
+
+			scene.add( C2T2 );
+	}
+
+    function animate() {
+        render();
+		controls.update(); // required if controls.enableDamping = true, or if controls.autoRotate = true
+        requestAnimationFrame( animate );
+    }
+    
+    function render(){
+        renderer.render( scene, camera );
+    }
+	
+	</script>
+  </body>
+</html>
